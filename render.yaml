@@ -1,0 +1,18 @@
+# Configuration de déploiement Render (site statique gratuit)
+# La Maison Hantée — Club de Vibe Coding du LPELIA
+services:
+  - type: web
+    name: maison-hantee-lpelia
+    runtime: static
+    branch: main
+    autoDeploy: true              # chaque modification envoyée sur GitHub est publiée
+    buildCommand: echo "Aucune compilation nécessaire"
+    staticPublishPath: .          # index.html est à la racine du dépôt
+    headers:
+      # le navigateur vérifie toujours s'il existe une nouvelle version du jeu
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

@@ -1,0 +1,1627 @@
+/* ==========================================================================
+   LA MAISON HANTÉE — Les 7 Secrets
+   Feuille de style (design, animations, responsive)
+   Club de Vibe Coding du LPELIA
+   ========================================================================== */
+
+/* Mise en page : une scène de nuit plein écran (la maison) reste derrière ;
+   chaque écran flotte au premier plan comme une fenêtre éclairée. */
+:root {
+  color-scheme: dark;
+
+  /* --- Couleurs --- */
+  --nuit: #0b0612;          /* fond : noir violacé */
+  --aubergine: #1d0e2e;     /* panneaux */
+  --violet: #5b2d8a;        /* lueurs froides */
+  --citrouille: #ff7b1c;    /* accent principal */
+  --braise: #ffc061;        /* lumière chaude */
+  --spectre: #eee8f8;       /* texte principal */
+  --brume: #b7a8cf;         /* texte secondaire */
+  --feu-follet: #6dffb0;    /* bonne réponse */
+  --sang: #ff4766;          /* mauvaise réponse, alerte */
+  --parchemin: #f1dfb8;
+  --encre: #3a2410;
+  --silhouette: #0a0510;    /* maison, ombres */
+
+  /* Mêmes couleurs en version « canaux » pour la transparence : rgb(var(--x-rgb) / .5) */
+  --nuit-rgb: 11 6 18;
+  --aubergine-rgb: 29 14 46;
+  --violet-rgb: 91 45 138;
+  --citrouille-rgb: 255 123 28;
+  --braise-rgb: 255 192 97;
+  --spectre-rgb: 238 232 248;
+  --brume-rgb: 183 168 207;
+  --feu-follet-rgb: 109 255 176;
+  --sang-rgb: 255 71 102;
+
+  /* --- Polices --- */
+  --police-titre: 'Grenze Gotisch', 'Times New Roman', serif;
+  --police-texte: 'Alegreya', Georgia, 'Times New Roman', serif;
+  --police-ui: 'Alegreya Sans SC', 'Trebuchet MS', system-ui, sans-serif;
+
+  /* --- Divers --- */
+  --rayon: 14px;
+  --transition: 220ms cubic-bezier(.2, .7, .2, 1);
+}
+
+/* ==========================================================================
+   1. BASE
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--nuit);
+  color: var(--spectre);
+  font-family: var(--police-texte);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app { position: relative; min-height: 100%; isolation: isolate; overflow-x: clip; }
+
+main { position: relative; z-index: 2; min-height: 100%; }
+
+button, input { font: inherit; color: inherit; }
+
+[hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+:focus-visible { outline: 3px solid var(--braise); outline-offset: 3px; }
+
+/* ==========================================================================
+   2. LE DÉCOR
+   ========================================================================== */
+.decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* voile sombre ajouté pendant la partie pour que la carte reste lisible */
+.decor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--nuit-rgb) / .58);
+  opacity: 0;
+  transition: opacity 900ms ease;
+  z-index: 20;
+}
+#app.en-jeu .decor::after { opacity: 1; }
+
+.symboles { position: absolute; }
+
+.ciel {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 100%, rgb(var(--citrouille-rgb) / .16), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 78% 12%, #3d1b60 0%, #1c0c2e 45%, var(--nuit) 85%);
+}
+
+/* --- Étoiles (créées par script.js) --- */
+.etoile {
+  position: absolute;
+  width: var(--taille, 2px);
+  height: var(--taille, 2px);
+  border-radius: 50%;
+  background: var(--spectre);
+  opacity: .6;
+  animation: scintille var(--duree, 3s) ease-in-out var(--delai, 0s) infinite;
+}
+@keyframes scintille {
+  0%, 100% { opacity: .15; transform: scale(.7); }
+  50%      { opacity: .9;  transform: scale(1.1); }
+}
+
+/* --- Lune --- */
+.lune {
+  position: absolute;
+  top: 5%;
+  right: -3%;
+  width: clamp(110px, 32vmin, 250px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 62%, rgb(180 150 100 / .35) 0 7%, transparent 8%),
+    radial-gradient(circle at 62% 30%, rgb(180 150 100 / .3) 0 10%, transparent 11%),
+    radial-gradient(circle at 70% 70%, rgb(180 150 100 / .25) 0 5%, transparent 6%),
+    radial-gradient(circle at 38% 34%, #fffbee 0%, #f7e6b8 55%, #dcbc78 100%);
+  box-shadow:
+    0 0 40px rgb(255 226 160 / .55),
+    0 0 120px rgb(255 190 110 / .3),
+    0 0 260px rgb(var(--violet-rgb) / .45);
+  animation: lueur-lune 7s ease-in-out infinite;
+}
+@keyframes lueur-lune {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.08); }
+}
+
+/* --- Chauves-souris : le conteneur vole, le SVG bat des ailes --- */
+.vol {
+  position: absolute;
+  left: 0;
+  width: clamp(34px, 6vmin, 56px);
+  aspect-ratio: 64 / 30;
+  animation: traversee var(--duree, 16s) linear var(--delai, 0s) infinite;
+}
+.vol svg { width: 100%; height: 100%; display: block; }
+.battement { animation: battement .22s ease-in-out infinite alternate; transform-origin: center; }
+@keyframes battement { from { transform: scaleY(1); } to { transform: scaleY(.35); } }
+@keyframes traversee {
+  0%   { transform: translate(-15vw, 0) rotate(-4deg); }
+  25%  { transform: translate(20vw, -4vh) rotate(3deg); }
+  50%  { transform: translate(52vw, 3vh) rotate(-3deg); }
+  75%  { transform: translate(82vw, -3vh) rotate(4deg); }
+  100% { transform: translate(115vw, 1vh) rotate(-2deg); }
+}
+.vol-1 { top: 12%; --duree: 14s; --delai: -3s; }
+.vol-2 { top: 22%; --duree: 19s; --delai: -11s; width: clamp(24px, 4vmin, 40px); }
+.vol-3 { top: 8%;  --duree: 23s; --delai: -17s; width: clamp(20px, 3.4vmin, 34px); }
+
+/* --- Maison --- */
+.maison {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: min(118vw, 620px);
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 30px rgb(var(--violet-rgb) / .35));
+}
+.fenetre {
+  fill: var(--braise);
+  filter: drop-shadow(0 0 6px rgb(var(--citrouille-rgb) / .9));
+  animation: vacille 4s steps(1) infinite;
+}
+.f-a { animation-delay: -1s; }
+.f-b { animation-duration: 6s; animation-delay: -2s; }
+.f-c { animation-duration: 5s; }
+.f-d { animation-duration: 7s; animation-delay: -3s; }
+.f-e { animation-duration: 3.5s; animation-delay: -2.5s; }
+.f-f { fill: #3a2356; filter: none; animation: none; }
+.f-g { fill: #8affc4; filter: drop-shadow(0 0 8px rgb(var(--feu-follet-rgb) / .9)); animation-duration: 9s; }
+.porte-maison { fill: rgb(var(--citrouille-rgb) / .55); filter: drop-shadow(0 0 8px rgb(var(--citrouille-rgb) / .6)); }
+@keyframes vacille {
+  0%, 100% { opacity: 1; }
+  12%      { opacity: .55; }
+  14%      { opacity: 1; }
+  47%      { opacity: .8; }
+  71%      { opacity: .3; }
+  73%      { opacity: 1; }
+}
+.ombre-fenetre { animation: ombre-passe 11s ease-in-out infinite; opacity: 0; }
+@keyframes ombre-passe {
+  0%, 60%, 100% { opacity: 0; transform: translateX(-6px); }
+  68%, 80%      { opacity: 1; transform: translateX(0); }
+}
+
+/* --- Fantômes : le conteneur se déplace, le SVG flotte --- */
+.spectre {
+  position: absolute;
+  left: 0;
+  width: clamp(38px, 7vmin, 72px);
+  aspect-ratio: 60 / 72;
+  opacity: .85;
+  filter: drop-shadow(0 0 14px rgb(var(--spectre-rgb) / .55));
+  animation: derive-spectre var(--duree, 26s) linear var(--delai, 0s) infinite;
+}
+.spectre svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: flotte 3.2s ease-in-out infinite;
+}
+@keyframes flotte {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(4deg); }
+}
+@keyframes derive-spectre {
+  0%   { transform: translateX(var(--depart, -20vw)); opacity: 0; }
+  10%  { opacity: .85; }
+  90%  { opacity: .85; }
+  100% { transform: translateX(var(--arrivee, 120vw)); opacity: 0; }
+}
+/* sur téléphone, les fantômes passent devant la maison, sous le texte */
+.spectre-1 { top: 74%; --duree: 24s; --delai: -6s; }
+.spectre-2 { top: 86%; --duree: 32s; --delai: -20s; width: clamp(28px, 5vmin, 52px); opacity: .6; }
+.spectre-2 svg { transform: scaleX(-1); }
+.spectre-3 {
+  top: auto;
+  bottom: clamp(140px, 38vmin, 320px);
+  left: 58%;
+  width: clamp(24px, 4vmin, 40px);
+  animation: apparition-spectre 8s ease-in-out infinite;
+}
+@keyframes apparition-spectre {
+  0%, 100% { opacity: 0; transform: translateY(10px); }
+  40%, 60% { opacity: .8; transform: translateY(-12px); }
+}
+
+/* --- Brouillard : trois couches qui glissent à des vitesses différentes --- */
+.brouillard {
+  position: absolute;
+  left: 0;
+  bottom: -6%;
+  width: 200%;
+  height: 34%;
+  background:
+    radial-gradient(ellipse 22% 55% at 25% 60%, rgb(var(--brume-rgb) / .22), transparent 72%),
+    radial-gradient(ellipse 22% 55% at 75% 60%, rgb(var(--brume-rgb) / .22), transparent 72%);
+  animation: brume 46s linear infinite;
+}
+.brouillard-2 { height: 26%; bottom: -2%; opacity: .7; animation-duration: 31s; animation-direction: reverse; }
+.brouillard-3 { height: 46%; bottom: -14%; opacity: .5; animation-duration: 64s; }
+@keyframes brume { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* --- Citrouilles --- */
+.citrouille {
+  position: absolute;
+  bottom: 1.5%;
+  width: clamp(64px, 15vmin, 130px);
+  aspect-ratio: 120 / 100;
+  filter: drop-shadow(0 6px 18px rgb(var(--citrouille-rgb) / .45));
+  z-index: 3;
+}
+.citrouille-gauche { left: 3%; }
+.citrouille-droite { right: 4%; width: clamp(48px, 11vmin, 96px); transform: rotate(6deg); }
+.visage-citrouille { animation: flamme-citrouille 2.6s ease-in-out infinite; }
+.citrouille-droite .visage-citrouille { animation-delay: -1.3s; }
+@keyframes flamme-citrouille {
+  0%, 100% { opacity: 1; }
+  30%      { opacity: .7; }
+  55%      { opacity: .95; }
+  70%      { opacity: .6; }
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgb(0 0 0 / .7) 100%);
+  z-index: 10;
+}
+/* battement de cœur rouge quand il reste moins de 30 secondes */
+#app.urgence .vignette { animation: coeur 1s ease-in-out infinite; }
+@keyframes coeur {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgb(var(--sang-rgb) / 0); }
+  15%      { box-shadow: inset 0 0 120px 10px rgb(var(--sang-rgb) / .35); }
+  30%      { box-shadow: inset 0 0 60px 0 rgb(var(--sang-rgb) / .1); }
+  45%      { box-shadow: inset 0 0 110px 8px rgb(var(--sang-rgb) / .3); }
+}
+
+/* ==========================================================================
+   3. ÉCRANS ET BOUTONS COMMUNS
+   ========================================================================== */
+.ecran {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-block: clamp(16px, 4vh, 40px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ecran:not([hidden]) { animation: apparition-ecran 700ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes apparition-ecran {
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+.surtitre {
+  margin: 0;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--citrouille);
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5em;
+  min-height: 48px;
+  padding: .7em 1.4em;
+  border: 0;
+  border-radius: 8px;
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition);
+  touch-action: manipulation;
+}
+.btn:disabled { cursor: not-allowed; opacity: .45; }
+
+.btn-principal {
+  color: #2a0e00;
+  background: linear-gradient(180deg, #ffa553 0%, var(--citrouille) 55%, #d9560a 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 240 210 / .7),
+    inset 0 -2px 0 rgb(120 40 0 / .4),
+    0 10px 28px -10px rgb(var(--citrouille-rgb) / .9);
+}
+.btn-principal:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 240 210 / .7),
+    inset 0 -2px 0 rgb(120 40 0 / .4),
+    0 14px 34px -8px rgb(var(--citrouille-rgb) / 1),
+    0 0 0 4px rgb(var(--citrouille-rgb) / .18);
+}
+.btn-principal:not(:disabled):active { transform: translateY(1px); }
+
+.btn-secondaire {
+  color: var(--brume);
+  background: rgb(var(--aubergine-rgb) / .6);
+  box-shadow: inset 0 0 0 1px rgb(var(--brume-rgb) / .35);
+}
+.btn-secondaire:not(:disabled):hover {
+  color: var(--spectre);
+  box-shadow: inset 0 0 0 1px rgb(var(--braise-rgb) / .7), 0 0 20px -4px rgb(var(--braise-rgb) / .35);
+}
+
+/* --- Bouton son --- */
+.btn-son {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 0;
+  background: rgb(var(--aubergine-rgb) / .7);
+  box-shadow: inset 0 0 0 1px rgb(var(--brume-rgb) / .3);
+  cursor: pointer;
+  transition: box-shadow var(--transition);
+}
+.btn-son:hover { box-shadow: inset 0 0 0 1px rgb(var(--braise-rgb) / .8); }
+.btn-son-icone {
+  width: 20px;
+  height: 20px;
+  background: var(--braise);
+  -webkit-mask: var(--icone-son) center / contain no-repeat;
+  mask: var(--icone-son) center / contain no-repeat;
+  --icone-son: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 9h4l5-4v14l-5-4H4z'/%3E%3Cpath d='M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12' stroke='black' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.btn-son[aria-pressed="false"] .btn-son-icone {
+  background: var(--brume);
+  --icone-son: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 9h4l5-4v14l-5-4H4z'/%3E%3Cpath d='M16 9l6 6M22 9l-6 6' stroke='black' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.btn-son-accueil {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  z-index: 5;
+}
+
+/* ==========================================================================
+   4. ÉCRAN D'ACCUEIL
+   ========================================================================== */
+.ecran-accueil {
+  justify-content: flex-start;
+  padding-top: clamp(56px, 9vh, 110px);
+  padding-bottom: clamp(200px, 42vh, 380px); /* laisse voir la maison en bas */
+  text-align: center;
+}
+
+.accueil-contenu {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+/* halo sombre derrière le texte pour garantir la lisibilité */
+.accueil-contenu::before {
+  content: "";
+  position: absolute;
+  inset: -40px -16px;   /* ne dépasse jamais de l'écran sur téléphone */
+  background: radial-gradient(ellipse at 50% 45%, rgb(var(--nuit-rgb) / .72), transparent 70%);
+  z-index: -1;
+}
+
+.titre-jeu {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: .86;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  text-wrap: balance;
+  filter: drop-shadow(0 0 18px rgb(var(--citrouille-rgb) / .55)) drop-shadow(0 4px 0 rgb(40 8 0 / .9));
+  animation: entree-titre 1.4s cubic-bezier(.2, .7, .2, 1) both, gresille 6s linear 1.6s infinite;
+}
+.titre-petit {
+  font-size: clamp(1.9rem, 8vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--spectre);
+}
+.titre-grand {
+  font-size: clamp(4.4rem, 22vw, 9rem);
+  letter-spacing: .01em;
+  background: linear-gradient(180deg, #fff0c9 0%, var(--braise) 30%, var(--citrouille) 62%, #b33d00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-inline: .06em;
+}
+@keyframes entree-titre {
+  from { opacity: 0; transform: scale(.9); letter-spacing: .3em; }
+  to   { opacity: 1; transform: none; }
+}
+/* grésillement d'ampoule : le titre clignote brièvement de temps en temps */
+@keyframes gresille {
+  0%, 89%, 100% { opacity: 1; }
+  90%           { opacity: .35; }
+  91%           { opacity: 1; }
+  93%           { opacity: .5; }
+  94%           { opacity: 1; }
+}
+
+.sous-titre {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: clamp(1rem, 3.6vw, 1.25rem);
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--braise);
+}
+.sous-titre::before,
+.sous-titre::after {
+  content: "";
+  width: clamp(24px, 8vw, 60px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--braise));
+}
+.sous-titre::after { transform: scaleX(-1); }
+
+.pitch {
+  margin: 6px 0 0;
+  max-width: 42ch;
+  font-style: italic;
+  font-size: clamp(1.02rem, 3.4vw, 1.2rem);
+  color: var(--spectre);
+  text-shadow: 0 2px 10px var(--nuit);
+}
+
+.regles {
+  list-style: none;
+  margin: 6px 0 10px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: clamp(18px, 6vw, 40px);
+}
+.regles li { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.regles strong {
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(1.9rem, 7vw, 2.5rem);
+  line-height: 1;
+  color: var(--citrouille);
+  text-shadow: 0 0 18px rgb(var(--citrouille-rgb) / .6);
+}
+.regles span {
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brume);
+}
+
+.btn-commencer {
+  font-size: clamp(1.1rem, 4vw, 1.3rem);
+  padding: .85em 2em;
+  overflow: hidden;
+  animation: respire 2.6s ease-in-out infinite;
+}
+/* reflet lumineux qui balaie le bouton */
+.btn-commencer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgb(255 250 230 / .55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: reflet 3.4s ease-in-out 1s infinite;
+}
+@keyframes reflet { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+@keyframes respire {
+  0%, 100% { box-shadow: inset 0 1px 0 rgb(255 240 210 / .7), 0 10px 28px -10px rgb(var(--citrouille-rgb) / .9), 0 0 0 0 rgb(var(--citrouille-rgb) / .4); }
+  50%      { box-shadow: inset 0 1px 0 rgb(255 240 210 / .7), 0 10px 28px -10px rgb(var(--citrouille-rgb) / .9), 0 0 0 12px rgb(var(--citrouille-rgb) / 0); }
+}
+
+.record-accueil {
+  margin: 0;
+  font-family: var(--police-ui);
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: var(--brume);
+}
+.record-accueil strong { color: var(--braise); font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   5. HUD (chronomètre, salle, score) ET PROGRESSION
+   ========================================================================== */
+.ecran-jeu { gap: 14px; }
+
+.hud {
+  width: 100%;
+  max-width: 680px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 16px;
+  background: rgb(var(--aubergine-rgb) / .78);
+  box-shadow: inset 0 0 0 1px rgb(var(--brume-rgb) / .18), 0 12px 30px -16px rgb(0 0 0 / .9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.hud-bloc { display: flex; flex-direction: column; min-width: 0; }
+.hud-chrono { flex-direction: row; align-items: flex-end; gap: 10px; }
+.hud-texte { display: flex; flex-direction: column; }
+.hud-label {
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--brume);
+}
+.hud-valeur {
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: clamp(1.15rem, 4.4vw, 1.45rem);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--spectre);
+}
+.hud-chrono { justify-self: start; }
+.hud-salle { justify-self: center; align-items: center; }
+.hud-score { justify-self: end; align-items: flex-end; }
+.hud-score .hud-valeur { color: var(--braise); }
+.hud-score .hud-valeur.bump { animation: bump 450ms ease; }
+@keyframes bump { 40% { transform: scale(1.3); } }
+
+/* --- La bougie-chronomètre : la cire fond avec le temps --- */
+.bougie {
+  --reste: 1;            /* 1 = plein, 0 = fondu (mis à jour par script.js) */
+  position: relative;
+  width: 14px;
+  height: 46px;
+  flex: none;
+}
+.bougie .cire {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: calc(var(--reste) * 30px + 4px);
+  border-radius: 3px 3px 2px 2px;
+  background: linear-gradient(90deg, #cbb791, #fff3dc 45%, #c2ad86);
+  transition: height 400ms linear;
+}
+.bougie .meche {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--reste) * 30px + 4px);
+  width: 2px;
+  height: 5px;
+  margin-left: -1px;
+  background: #2b1d14;
+  transition: bottom 400ms linear;
+}
+.bougie .flamme {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--reste) * 30px + 7px);
+  width: 10px;
+  height: 15px;
+  margin-left: -5px;
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(circle at 50% 72%, #fff8d6 0 18%, #ffc061 40%, #ff6a00 72%, transparent 74%);
+  box-shadow: 0 0 14px 3px rgb(var(--citrouille-rgb) / .55);
+  transform-origin: 50% 90%;
+  transition: bottom 400ms linear;
+  animation: flamme .16s ease-in-out infinite alternate;
+}
+@keyframes flamme {
+  from { transform: scale(1, 1) rotate(-2deg); }
+  to   { transform: scale(.92, 1.08) rotate(2deg); }
+}
+.hud-chrono.alerte .hud-valeur { color: var(--sang); animation: alerte-chrono 1s ease-in-out infinite; }
+.hud-chrono.alerte .flamme {
+  background: radial-gradient(circle at 50% 72%, #ffe9ee 0 18%, #ff8aa0 40%, var(--sang) 72%, transparent 74%);
+  box-shadow: 0 0 16px 4px rgb(var(--sang-rgb) / .6);
+  animation-duration: .08s;
+}
+@keyframes alerte-chrono { 50% { transform: scale(1.12); } }
+
+/* --- Progression : 7 sceaux reliés par un rail --- */
+.progression { position: relative; width: 100%; max-width: 680px; padding-block: 2px; }
+.progression-rail {
+  position: absolute;
+  left: calc(100% / 14);
+  right: calc(100% / 14);
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: rgb(var(--brume-rgb) / .18);
+  overflow: hidden;
+}
+.progression-remplissage {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--braise), var(--citrouille));
+  box-shadow: 0 0 10px rgb(var(--citrouille-rgb) / .8);
+  transition: width 700ms cubic-bezier(.2, .7, .2, 1);
+}
+.sceaux {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.sceau { display: grid; place-items: center; }
+.sceau span {
+  width: clamp(28px, 8vw, 34px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: clamp(.8rem, 2.6vw, .95rem);
+  color: var(--brume);
+  background: var(--aubergine);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--brume-rgb) / .3);
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+}
+.sceau.actuel span {
+  color: var(--braise);
+  box-shadow: inset 0 0 0 2px var(--citrouille), 0 0 0 0 rgb(var(--citrouille-rgb) / .5);
+  animation: pulse-sceau 1.8s ease-out infinite;
+}
+@keyframes pulse-sceau {
+  0%   { box-shadow: inset 0 0 0 2px var(--citrouille), 0 0 0 0 rgb(var(--citrouille-rgb) / .55); }
+  100% { box-shadow: inset 0 0 0 2px var(--citrouille), 0 0 0 10px rgb(var(--citrouille-rgb) / 0); }
+}
+.sceau.resolu span {
+  color: #2a0e00;
+  background: radial-gradient(circle at 35% 30%, #ffd79a, var(--citrouille) 62%, #b84a00);
+  box-shadow: inset 0 0 0 1.5px #ffd28a, 0 0 14px rgb(var(--citrouille-rgb) / .75);
+  animation: sceau-allume 600ms cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes sceau-allume { 0% { transform: scale(.5); } 100% { transform: scale(1); } }
+
+/* ==========================================================================
+   6. LA CARTE DE L'ÉNIGME
+   ========================================================================== */
+.carte {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  padding: clamp(20px, 4.5vw, 36px);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(var(--violet-rgb) / .35), transparent 70%),
+    linear-gradient(165deg, rgb(44 21 70 / .94), rgb(18 9 30 / .96));
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--citrouille-rgb) / .35),
+    inset 0 1px 0 rgb(255 255 255 / .06),
+    0 30px 80px -24px rgb(0 0 0 / .9),
+    0 0 70px -20px rgb(var(--violet-rgb) / .7);
+  transition: box-shadow 300ms ease;
+}
+/* double cadre intérieur, comme un vieux tableau */
+.carte::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 14px;
+  border: 1px solid rgb(var(--braise-rgb) / .12);
+  pointer-events: none;
+}
+
+.carte-surtitre {
+  margin: 0 0 4px;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--citrouille);
+}
+.carte-titre {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  line-height: 1;
+  text-wrap: balance;
+  color: var(--spectre);
+  text-shadow: 0 0 24px rgb(var(--violet-rgb) / .9);
+}
+.carte-titre:focus { outline: none; }
+.carte-histoire {
+  margin: 10px 0 0;
+  max-width: 60ch;
+  font-style: italic;
+  color: var(--brume);
+}
+.carte-visuel { margin: 20px 0; }
+.carte-question {
+  margin: 0 0 14px;
+  font-weight: 600;
+  font-size: 1.12rem;
+  line-height: 1.4;
+  color: var(--braise);
+}
+
+/* --- Formulaire de réponse --- */
+.label-reponse {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .78rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--brume);
+}
+.champ-ligne { display: flex; flex-wrap: wrap; gap: 10px; }
+#reponse {
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 52px;
+  padding: .6em .9em;
+  font-size: 1.15rem;  /* 16 px minimum : évite le zoom automatique sur iPhone */
+  border: 0;
+  border-radius: 10px;
+  background: rgb(0 0 0 / .38);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--brume-rgb) / .35);
+  color: var(--spectre);
+  transition: box-shadow var(--transition), background var(--transition);
+}
+#reponse::placeholder { color: rgb(var(--brume-rgb) / .6); font-style: italic; }
+#reponse:focus {
+  outline: none;
+  background: rgb(0 0 0 / .5);
+  box-shadow: inset 0 0 0 2px var(--citrouille), 0 0 0 4px rgb(var(--citrouille-rgb) / .2);
+}
+#btn-valider { flex: 0 0 auto; min-height: 52px; }
+
+/* --- Indices --- */
+.zone-indice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 14px;
+}
+.indices-restants {
+  font-family: var(--police-ui);
+  font-weight: 500;
+  font-size: .85rem;
+  letter-spacing: .04em;
+  color: var(--brume);
+}
+.indices { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.indices:not(:empty) { margin-top: 12px; }
+.indices li {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgb(var(--braise-rgb) / .08);
+  border: 1px dashed rgb(var(--braise-rgb) / .4);
+  color: var(--spectre);
+  animation: deroule 450ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.indice-label {
+  display: block;
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: .72rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--braise);
+}
+@keyframes deroule {
+  from { opacity: 0; transform: translateY(-6px) scaleY(.85); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- Message de retour --- */
+.retour {
+  min-height: 1.6em;
+  margin: 14px 0 0;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.retour.ok   { color: var(--feu-follet); }
+.retour.ko   { color: var(--sang); }
+.retour.info { color: var(--brume); }
+
+/* --- États de la carte --- */
+.carte.bonne {
+  box-shadow:
+    inset 0 0 0 2px var(--feu-follet),
+    0 30px 80px -24px rgb(0 0 0 / .9),
+    0 0 80px -10px rgb(var(--feu-follet-rgb) / .55);
+}
+.carte.mauvaise {
+  animation: secousse 480ms cubic-bezier(.36, .07, .19, .97);
+  box-shadow:
+    inset 0 0 0 2px var(--sang),
+    0 30px 80px -24px rgb(0 0 0 / .9),
+    0 0 70px -14px rgb(var(--sang-rgb) / .6);
+}
+@keyframes secousse {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-9px) rotate(-.4deg); }
+  40%, 60% { transform: translateX(9px) rotate(.4deg); }
+}
+.carte.sortie { animation: sortie-carte 450ms ease-in forwards; }
+.carte.entree { animation: entree-carte 600ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes sortie-carte {
+  to { opacity: 0; transform: translateX(-40px) rotateY(18deg) scale(.96); filter: blur(4px); }
+}
+@keyframes entree-carte {
+  from { opacity: 0; transform: translateX(40px) rotateY(-18deg) scale(.96); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+/* --- Tampon « Résolu » --- */
+.tampon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 4px 14px;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--feu-follet);
+  border: 3px double var(--feu-follet);
+  border-radius: 8px;
+  transform: rotate(-12deg) scale(2.2);
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 0 12px rgb(var(--feu-follet-rgb) / .8);
+}
+.carte.bonne .tampon { animation: tampon 500ms cubic-bezier(.3, 1.5, .5, 1) forwards; }
+@keyframes tampon { to { opacity: 1; transform: rotate(-12deg) scale(1); } }
+
+/* ==========================================================================
+   7. LES VISUELS DES 7 ÉNIGMES
+   ========================================================================== */
+.note-visuel {
+  margin: 12px 0 0;
+  text-align: center;
+  font-style: italic;
+  font-size: .95rem;
+  color: var(--brume);
+}
+
+/* --- Salle I : le parchemin --- */
+.parchemin {
+  max-width: 400px;
+  margin-inline: auto;
+  padding: 22px 26px;
+  text-align: center;
+  font-style: italic;
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--encre);
+  background:
+    radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / .35), transparent 50%),
+    linear-gradient(175deg, #f6e8c6, var(--parchemin) 45%, #dcc08a);
+  border-radius: 4px 10px 6px 12px;
+  box-shadow: inset 0 0 34px rgb(120 60 10 / .45), 0 14px 30px -10px rgb(0 0 0 / .8);
+  transform: rotate(-1.2deg);
+}
+.parchemin p { margin: 0; }
+.parchemin .parchemin-chute {
+  margin-top: 10px;
+  font-family: var(--police-titre);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #7a2e00;
+}
+
+/* --- Salle II : l'étagère de la bibliothèque --- */
+.etagere {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-bottom: 10px solid #3b2414;
+  box-shadow: 0 6px 0 #1f130a;
+  max-width: 340px;
+  margin-inline: auto;
+}
+.livre {
+  width: 48px;
+  height: var(--h, 160px);
+  padding-block: 12px;
+  writing-mode: vertical-rl;
+  display: flex;
+  align-items: center;
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .08em;
+  color: #f4dca0;
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / .45), transparent 22%, rgb(255 255 255 / .12) 45%, transparent 60%, rgb(0 0 0 / .5)),
+    var(--teinte, #5a3a7a);
+  border-radius: 3px 3px 1px 1px;
+  box-shadow: inset 0 10px 0 -7px #d6b46a, inset 0 -10px 0 -7px #d6b46a;
+}
+.livre-penche { transform: rotate(-12deg); transform-origin: bottom left; margin-left: 6px; }
+.lettrine { transition: color 400ms, text-shadow 400ms; }
+/* l'indice n°2 fait briller les premières lettres */
+[data-indices="2"] .lettrine {
+  color: var(--citrouille);
+  text-shadow: 0 0 10px rgb(var(--citrouille-rgb) / 1);
+  font-size: 1.25em;
+}
+.resolu .lettrine { color: var(--feu-follet); text-shadow: 0 0 10px rgb(var(--feu-follet-rgb) / 1); }
+
+/* --- Salle III : la cuisine --- */
+.cuisine {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px 24px;
+}
+.chaudron { position: relative; width: 130px; height: 140px; margin-inline: auto; }
+.chaudron-potion {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 34px;
+  height: 26px;
+  border-radius: 50%;
+  border: 6px solid #2a1f33;
+  background: radial-gradient(ellipse, #c8ff8a, #3fbf4f 75%);
+  box-shadow: 0 0 26px rgb(120 255 120 / .6);
+  z-index: 2;
+}
+.chaudron-corps {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 44px;
+  height: 74px;
+  border-radius: 20px 20px 62px 62px / 16px 16px 62px 62px;
+  background: radial-gradient(circle at 35% 30%, #4d3d5e, #120a1a 68%);
+  box-shadow: inset 0 -10px 18px rgb(0 0 0 / .6);
+  z-index: 1;
+}
+.chaudron-feu {
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  bottom: 0;
+  height: 30px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.chaudron-feu span {
+  width: 16px;
+  height: 26px;
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(circle at 50% 75%, #fff2b0, var(--citrouille) 60%, transparent 72%);
+  transform-origin: bottom;
+  animation: flamme .2s ease-in-out infinite alternate;
+}
+.chaudron-feu span:nth-child(2) { height: 30px; animation-delay: -.1s; }
+.bulle {
+  position: absolute;
+  top: 30px;
+  left: var(--x);
+  width: var(--t);
+  height: var(--t);
+  border-radius: 50%;
+  background: rgb(190 255 160 / .8);
+  box-shadow: 0 0 8px rgb(150 255 130 / .8);
+  z-index: 3;
+  animation: bulle 2.2s ease-in var(--delai) infinite;
+}
+@keyframes bulle {
+  0%   { opacity: 0; transform: translateY(0) scale(.4); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-34px) scale(1); }
+}
+.resolu .chaudron-potion { background: radial-gradient(ellipse, #fff1b0, var(--citrouille) 75%); box-shadow: 0 0 30px rgb(var(--citrouille-rgb) / .8); }
+.recette {
+  margin: 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: 6px;
+  font-size: 1.05rem;
+}
+.recette li::marker { font-family: var(--police-titre); font-weight: 700; color: var(--citrouille); }
+.recette strong { color: var(--braise); }
+
+/* --- Salle IV : la galerie des portraits --- */
+.murmure {
+  margin: 0 auto 16px;
+  max-width: 46ch;
+  text-align: center;
+  font-style: italic;
+  color: var(--spectre);
+  text-shadow: 0 0 14px rgb(var(--spectre-rgb) / .35);
+}
+.portraits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(10px, 3vw, 20px);
+  max-width: 420px;
+  margin-inline: auto;
+}
+.portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cadre {
+  width: 100%;
+  max-width: 110px;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 6px solid #9a7128;
+  background: radial-gradient(circle at 50% 38%, #f6c46e, #a8601c 60%, #3d1d07);
+  box-shadow: 0 0 0 2px #3b2508, inset 0 0 18px rgb(0 0 0 / .6), 0 10px 22px -8px rgb(0 0 0 / .9);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.silhouette {
+  font-size: clamp(2.4rem, 10vw, 3.4rem);
+  line-height: 1;
+  filter: brightness(0);
+  transform: translateY(6%);
+}
+.portrait-nom {
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .85rem;
+  letter-spacing: .05em;
+  color: var(--brume);
+  text-align: center;
+  line-height: 1.2;
+}
+.portrait:hover .cadre,
+.portrait.choisi .cadre {
+  transform: translateY(-3px) rotate(-1deg);
+  box-shadow: 0 0 0 2px var(--citrouille), inset 0 0 18px rgb(0 0 0 / .6), 0 0 26px rgb(var(--citrouille-rgb) / .6);
+}
+.portrait.choisi .portrait-nom { color: var(--braise); }
+.portrait.bon-choix .cadre { box-shadow: 0 0 0 3px var(--feu-follet), 0 0 34px rgb(var(--feu-follet-rgb) / .8); }
+.portrait.bon-choix .silhouette { filter: brightness(0) drop-shadow(0 0 8px var(--feu-follet)); }
+
+/* --- Salle V : l'escalier --- */
+.escalier {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+.marche {
+  width: clamp(48px, 15vw, 76px);
+  height: calc(var(--n) * 26px + 26px);
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+  border-radius: 4px 4px 0 0;
+  border-top: 4px solid #7a4a28;
+  background: linear-gradient(180deg, #4a2c1a, #1e1009);
+  box-shadow: inset 0 0 12px rgb(0 0 0 / .5);
+}
+.marche span {
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(1.4rem, 5vw, 1.9rem);
+  line-height: 1;
+  color: var(--braise);
+  text-shadow: 0 0 12px rgb(var(--citrouille-rgb) / .9);
+}
+.marche-mystere span { color: var(--citrouille); animation: mystere 1.4s ease-in-out infinite; }
+@keyframes mystere { 50% { opacity: .35; } }
+.resolu .marche-mystere span { color: var(--feu-follet); animation: none; text-shadow: 0 0 14px rgb(var(--feu-follet-rgb) / 1); }
+
+/* --- Salle VI : le miroir du grenier --- */
+.miroir {
+  position: relative;
+  width: min(280px, 86%);
+  aspect-ratio: 4 / 3;
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 10px solid #5a3d1a;
+  background: linear-gradient(135deg, #d4dbea 0%, #8d96ab 42%, #e2e8f2 56%, #7c859a 100%);
+  box-shadow: 0 0 0 3px #2a1a08, inset 0 0 40px rgb(30 20 50 / .6), 0 16px 34px -12px rgb(0 0 0 / .9);
+}
+/* reflet qui balaie la glace */
+.miroir::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / .5) 50%, transparent 60%);
+  animation: reflet-miroir 4.5s ease-in-out infinite;
+}
+@keyframes reflet-miroir { 0%, 40% { transform: translateX(-70%); } 100% { transform: translateX(70%); } }
+.ecriture-miroir {
+  display: block;
+  transform: scaleX(-1);            /* l'effet miroir est là ! */
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  letter-spacing: .08em;
+  color: rgb(40 22 60 / .78);
+  text-shadow: 0 1px 0 rgb(255 255 255 / .4);
+}
+.resolu .miroir { box-shadow: 0 0 0 3px #2a1a08, inset 0 0 40px rgb(30 20 50 / .4), 0 0 40px rgb(var(--feu-follet-rgb) / .6); }
+
+/* --- Salle VII : la tablette et le cadenas --- */
+.tablette {
+  max-width: 320px;
+  margin-inline: auto;
+  padding: 14px 20px;
+  display: grid;
+  gap: 6px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 20% 20%, rgb(255 255 255 / .06), transparent 40%),
+    linear-gradient(170deg, #4b4459, #26202f);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08), inset 0 -6px 14px rgb(0 0 0 / .5), 0 12px 26px -12px rgb(0 0 0 / .9);
+}
+.equation {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .35em;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 5vw, 1.6rem);
+  color: var(--brume);
+}
+.equation span { font-size: 1.15em; line-height: 1; }
+.equation b { color: var(--braise); font-weight: 900; min-width: 1.4em; text-align: left; }
+.cadenas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 18px;
+}
+.cadenas-icone { position: relative; width: 50px; height: 64px; flex: none; }
+.cadenas-anse {
+  position: absolute;
+  left: 9px;
+  top: 0;
+  width: 32px;
+  height: 34px;
+  border: 6px solid #b9b2c4;
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  transition: transform 500ms cubic-bezier(.3, 1.6, .5, 1);
+}
+.cadenas-corps {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f0b84a, #9a6a12);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .5);
+}
+.cadenas-corps::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 11px;
+  width: 8px;
+  height: 14px;
+  margin-left: -4px;
+  border-radius: 4px 4px 2px 2px;
+  background: #3b2508;
+}
+.resolu .cadenas-anse { transform: translateY(-10px) translateX(10px) rotate(14deg); }
+.molettes { display: flex; gap: 8px; }
+.molette { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.molette-symbole { font-size: 1.4rem; line-height: 1; }
+.molette-chiffre {
+  width: 42px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--braise);
+  background: linear-gradient(180deg, #120a1a, #2b1d3a 50%, #120a1a);
+  box-shadow: inset 0 0 0 1px rgb(var(--braise-rgb) / .35), inset 0 6px 8px rgb(0 0 0 / .6);
+}
+.resolu .molette-chiffre { color: var(--feu-follet); box-shadow: inset 0 0 0 1px var(--feu-follet), 0 0 14px rgb(var(--feu-follet-rgb) / .5); }
+
+/* ==========================================================================
+   8. EFFETS SPÉCIAUX
+   ========================================================================== */
+/* Flash rouge plein écran (mauvaise réponse) */
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgb(var(--sang-rgb) / .1), rgb(var(--sang-rgb) / .45));
+}
+.flash.actif { animation: flash 520ms ease-out; }
+@keyframes flash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Particules (étincelles et confettis) */
+.calque-particules { position: fixed; inset: 0; z-index: 45; pointer-events: none; overflow: hidden; }
+.particule {
+  position: absolute;
+  width: var(--taille, 6px);
+  height: var(--taille, 6px);
+  border-radius: 50%;
+  background: var(--couleur, var(--braise));
+  box-shadow: 0 0 10px var(--couleur, var(--braise));
+  animation: eclat var(--duree, 900ms) cubic-bezier(.1, .8, .3, 1) forwards;
+}
+@keyframes eclat {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); opacity: 0; }
+}
+.confetti {
+  position: absolute;
+  top: -40px;
+  font-size: var(--taille, 24px);
+  line-height: 1;
+  animation: chute var(--duree, 3s) linear var(--delai, 0s) forwards;
+}
+@keyframes chute {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx, 0), 110vh) rotate(var(--rot, 360deg)); opacity: .8; }
+}
+
+/* Points qui s'envolent (+100, −25…) */
+.flottant {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 1.7rem;
+  transform: translate(-50%, -50%);
+  animation: envol 1100ms ease-out forwards;
+}
+.flottant.plus  { color: var(--feu-follet); text-shadow: 0 0 14px rgb(var(--feu-follet-rgb) / .9); }
+.flottant.moins { color: var(--sang); text-shadow: 0 0 14px rgb(var(--sang-rgb) / .9); }
+@keyframes envol {
+  0%   { opacity: 0; transform: translate(-50%, -30%) scale(.6); }
+  20%  { opacity: 1; transform: translate(-50%, -60%) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -260%) scale(1); }
+}
+
+/* Le fantôme moqueur */
+.fantome-moqueur {
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right, 0px));
+  bottom: max(18vh, calc(env(safe-area-inset-bottom, 0px) + 90px));
+  z-index: 55;
+  width: clamp(70px, 16vw, 110px);
+  aspect-ratio: 60 / 72;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(140%);
+  filter: drop-shadow(0 0 18px rgb(var(--spectre-rgb) / .7));
+}
+.fantome-moqueur svg { width: 100%; height: 100%; display: block; }
+.fantome-moqueur.apparait { animation: moqueur 1700ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes moqueur {
+  0%   { opacity: 0; transform: translateX(140%) rotate(20deg); }
+  18%  { opacity: 1; transform: translateX(0) rotate(-8deg) scale(1.1); }
+  30%  { transform: translateX(0) rotate(6deg) scale(1); }
+  45%  { transform: translateX(0) rotate(-5deg); }
+  75%  { opacity: 1; transform: translateX(0) rotate(4deg); }
+  100% { opacity: 0; transform: translateX(140%) rotate(20deg); }
+}
+.bulle-moqueur {
+  position: absolute;
+  right: 80%;
+  top: -14%;
+  padding: 6px 12px;
+  white-space: nowrap;
+  border-radius: 14px 14px 2px 14px;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--aubergine);
+  background: var(--spectre);
+}
+
+/* ==========================================================================
+   9. ÉCRANS DE FIN
+   ========================================================================== */
+.ecran-fin { justify-content: center; text-align: center; }
+.fin-contenu {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(24px, 5vw, 40px);
+  border-radius: 22px;
+  background: linear-gradient(170deg, rgb(44 21 70 / .9), rgb(14 7 24 / .94));
+  box-shadow: inset 0 0 0 1px rgb(var(--citrouille-rgb) / .3), 0 30px 90px -20px rgb(0 0 0 / .9);
+}
+.ecran-victoire .fin-contenu { box-shadow: inset 0 0 0 1px rgb(var(--feu-follet-rgb) / .45), 0 0 90px -20px rgb(var(--feu-follet-rgb) / .4), 0 30px 90px -20px rgb(0 0 0 / .9); }
+.ecran-defaite .fin-contenu { box-shadow: inset 0 0 0 1px rgb(var(--sang-rgb) / .4), 0 0 90px -20px rgb(var(--sang-rgb) / .35), 0 30px 90px -20px rgb(0 0 0 / .9); }
+.ecran-victoire .surtitre { color: var(--feu-follet); }
+.ecran-defaite .surtitre { color: var(--sang); }
+
+.titre-fin {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(2.4rem, 10vw, 3.8rem);
+  line-height: 1;
+  text-wrap: balance;
+}
+.titre-fin:focus { outline: none; }
+.ecran-victoire .titre-fin { color: var(--braise); text-shadow: 0 0 30px rgb(var(--citrouille-rgb) / .7); }
+.ecran-defaite .titre-fin { color: var(--spectre); text-shadow: 0 0 30px rgb(var(--sang-rgb) / .6); }
+.fin-texte { margin: 0; max-width: 40ch; font-style: italic; color: var(--brume); }
+.fin-texte strong { color: var(--spectre); font-style: normal; }
+.solution { margin: 0; color: var(--brume); }
+.solution strong { color: var(--braise); font-family: var(--police-ui); font-weight: 800; letter-spacing: .04em; }
+
+.score-final { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 4px; }
+.score-label {
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--brume);
+}
+.score-grand {
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(3.4rem, 15vw, 5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--spectre);
+}
+.ecran-victoire .score-grand { color: var(--feu-follet); text-shadow: 0 0 30px rgb(var(--feu-follet-rgb) / .6); }
+.rang {
+  font-family: var(--police-ui);
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: var(--braise);
+}
+.nouveau-record {
+  margin-top: 4px;
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: .85rem;
+  letter-spacing: .1em;
+  color: #2a0e00;
+  background: var(--braise);
+  animation: bump 900ms ease infinite;
+}
+
+.stats {
+  width: 100%;
+  margin: 8px 0 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgb(var(--brume-rgb) / .16);
+}
+.stats div { padding: 10px 6px; background: rgb(var(--nuit-rgb) / .85); }
+.stats dt {
+  font-family: var(--police-ui);
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brume);
+}
+.stats dd {
+  margin: 2px 0 0;
+  font-family: var(--police-ui);
+  font-weight: 800;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--spectre);
+}
+
+.fin-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
+
+/* Porte qui s'ouvre (victoire) */
+.porte-ouverte {
+  position: relative;
+  width: 84px;
+  height: 104px;
+  margin-bottom: 4px;
+  perspective: 300px;
+  border-radius: 42px 42px 4px 4px;
+  overflow: hidden;
+  box-shadow: 0 0 0 4px #3b2414;
+}
+.lumiere-aube {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 70%, #fff8e0, var(--braise) 45%, var(--citrouille));
+  box-shadow: 0 0 60px rgb(var(--braise-rgb) / 1);
+}
+.battant {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, #3d2412, #23130a);
+  border: 1px solid #1a0d05;
+}
+.battant-gauche { left: 0; transform-origin: left; border-radius: 42px 0 0 0; }
+.battant-droit  { right: 0; transform-origin: right; border-radius: 0 42px 0 0; }
+.ecran-victoire:not([hidden]) .battant-gauche { animation: ouvre-gauche 1.4s cubic-bezier(.5, 0, .2, 1) .3s forwards; }
+.ecran-victoire:not([hidden]) .battant-droit  { animation: ouvre-droit 1.4s cubic-bezier(.5, 0, .2, 1) .3s forwards; }
+@keyframes ouvre-gauche { to { transform: rotateY(-100deg); } }
+@keyframes ouvre-droit  { to { transform: rotateY(100deg); } }
+
+/* Bougie éteinte (défaite) */
+.bougie-eteinte { position: relative; width: 22px; height: 90px; margin-bottom: 4px; }
+.bougie-eteinte .cire {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 26px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #cbb791, #fff3dc 45%, #c2ad86);
+}
+.bougie-eteinte .meche {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 2px;
+  height: 7px;
+  margin-left: -1px;
+  background: #2b1d14;
+}
+.fumee {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: rgb(var(--brume-rgb) / .5);
+  animation: fumee 2.4s ease-out infinite;
+}
+.fumee:nth-child(2) { animation-delay: .8s; }
+.fumee:nth-child(3) { animation-delay: 1.6s; }
+@keyframes fumee {
+  0%   { opacity: .8; transform: translate(0, 0) scale(.6); }
+  100% { opacity: 0; transform: translate(10px, -56px) scale(2.4); }
+}
+
+/* ==========================================================================
+   10. RESPONSIVE
+   ========================================================================== */
+/* Grands écrans : le titre à gauche, la maison à droite */
+@media (min-width: 900px) {
+  .ecran-accueil {
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    padding-top: clamp(32px, 6vh, 80px);
+    padding-bottom: clamp(32px, 6vh, 80px);
+    padding-left: max(8vw, env(safe-area-inset-left, 0px));
+  }
+  .accueil-contenu { align-items: flex-start; }
+  .accueil-contenu::before { inset: -60px -80px; }
+  .titre-jeu { align-items: flex-start; }
+  .regles { justify-content: flex-start; }
+  .regles li { align-items: flex-start; }
+  .sous-titre::before { display: none; }
+  .maison { left: 66%; width: min(52vw, 760px); }
+  .lune { top: 8%; right: 10%; }
+  .spectre-3 { left: 74%; }
+  /* sur grand écran, ils restent dans la moitié droite, côté maison */
+  .spectre-1 { top: 30%; --depart: 44vw; }
+  .spectre-2 { top: 52%; --depart: 52vw; }
+}
+
+/* Petits téléphones */
+@media (max-width: 420px) {
+  .cuisine { grid-template-columns: 1fr; }
+  .hud { padding-left: 10px; gap: 6px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stats-courtes { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Écrans peu hauts (téléphone à l'horizontale) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .ecran-accueil { padding-bottom: 40px; }
+  .maison { width: min(60vw, 420px); left: 72%; }
+}
+
+/* ==========================================================================
+   11. ACCESSIBILITÉ : MOUVEMENTS RÉDUITS
+   Si le joueur a demandé moins d'animations dans son système, on calme tout.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .vol, .spectre-1, .spectre-2 { display: none; }
+  .ecran:not([hidden]) { animation: none; }
+}

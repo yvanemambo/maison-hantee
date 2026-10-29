@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>La Maison Hantée</title>
+  <meta name="description" content="Jeu d'énigmes d'Halloween : perce les 7 secrets de la maison hantée en 180 secondes. Club de Vibe Coding du LPELIA.">
+  <meta name="theme-color" content="#0b0612">
+
+  <!-- Polices (facultatif : sans Internet, le jeu utilise des polices de secours) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;1,400&family=Alegreya+Sans+SC:wght@500;700;800&family=Grenze+Gotisch:wght@500;700;900&display=swap">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- =========================================================
+       1. LE DÉCOR (purement visuel, ignoré par les lecteurs d'écran)
+       ========================================================= -->
+  <div class="decor" aria-hidden="true">
+    <!-- Formes réutilisables : fantôme, chauve-souris, citrouille -->
+    <svg class="symboles" width="0" height="0">
+      <defs>
+        <radialGradient id="grad-fantome" cx="40%" cy="30%" r="80%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#cfc2ea"/>
+        </radialGradient>
+        <radialGradient id="grad-citrouille" cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stop-color="#ffab4a"/>
+          <stop offset="70%" stop-color="#e8640c"/>
+          <stop offset="100%" stop-color="#9c3a02"/>
+        </radialGradient>
+        <symbol id="s-fantome" viewBox="0 0 60 72">
+          <path d="M30 3C14 3 5 15 5 30v36l8-7 8 8 9-8 9 8 8-8 8 7V30C55 15 46 3 30 3z" fill="url(#grad-fantome)"/>
+          <ellipse cx="22" cy="29" rx="4" ry="6" fill="#1c0d2e"/>
+          <ellipse cx="38" cy="29" rx="4" ry="6" fill="#1c0d2e"/>
+          <ellipse cx="30" cy="44" rx="5" ry="6.5" fill="#1c0d2e"/>
+        </symbol>
+        <symbol id="s-chauve-souris" viewBox="0 0 64 30">
+          <path d="M32 9l-2-5-1.5 4C25 4 16 1 2 7c6 1.5 9 5 9 9 3.5-2.5 7-2 9 1.5 3-2.5 7-1.5 9 2.5l3 5 3-5c2-4 6-5 9-2.5 2-3.5 5.5-4 9-1.5 0-4 3-7.5 9-9C48 1 39 4 35.5 8L34 4z" fill="#08040d"/>
+        </symbol>
+        <symbol id="s-citrouille" viewBox="0 0 120 100">
+          <path d="M57 20c-1-8 2-14 10-17l3 5c-5 2-7 6-6 12z" fill="#4d5a26"/>
+          <ellipse cx="38" cy="60" rx="30" ry="35" fill="url(#grad-citrouille)"/>
+          <ellipse cx="82" cy="60" rx="30" ry="35" fill="url(#grad-citrouille)"/>
+          <ellipse cx="60" cy="58" rx="28" ry="39" fill="url(#grad-citrouille)" stroke="#a84204" stroke-width="1.5"/>
+          <g class="visage-citrouille" fill="#ffd36b">
+            <polygon points="36,50 52,50 44,36"/>
+            <polygon points="68,50 84,50 76,36"/>
+            <polygon points="55,62 65,62 60,54"/>
+            <path d="M32 70q28 20 56 0l-6 1-4 6-6-6-6 8-6-8-6 8-6-8-6 6z"/>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="ciel"></div>
+    <div class="etoiles" id="etoiles"></div>
+    <div class="lune"></div>
+
+    <div class="vol vol-1"><svg class="battement"><use href="#s-chauve-souris"/></svg></div>
+    <div class="vol vol-2"><svg class="battement"><use href="#s-chauve-souris"/></svg></div>
+    <div class="vol vol-3"><svg class="battement"><use href="#s-chauve-souris"/></svg></div>
+
+    <!-- La maison hantée -->
+    <svg class="maison" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax meet">
+      <path d="M0 300C60 262 140 248 200 250s150 14 200 50z" fill="#06030a"/>
+      <path class="arbre" d="M34 300l8-96-16-30m16 30l20-36m-18 70l-22-14m26-46l10-22" stroke="#06030a" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g fill="#0a0510" stroke="#3a2356" stroke-width="1.2">
+        <rect x="70" y="122" width="50" height="140"/>
+        <polygon points="62,124 94,44 128,124"/>
+        <rect x="278" y="100" width="42" height="160"/>
+        <polygon points="272,102 306,26 326,102"/>
+        <rect x="230" y="88" width="16" height="44"/>
+        <rect x="110" y="150" width="176" height="112"/>
+        <polygon points="98,152 200,82 298,152"/>
+      </g>
+      <g class="fenetres">
+        <rect class="fenetre f-a" x="84" y="140" width="22" height="30" rx="11"/>
+        <rect class="fenetre f-b" x="84" y="196" width="22" height="30"/>
+        <rect class="fenetre f-c" x="134" y="174" width="26" height="32"/>
+        <rect class="fenetre f-d" x="236" y="174" width="26" height="32"/>
+        <rect class="fenetre f-e" x="289" y="126" width="20" height="28" rx="10"/>
+        <rect class="fenetre f-f" x="289" y="190" width="20" height="28"/>
+        <circle class="fenetre f-g" cx="200" cy="124" r="11"/>
+        <path class="porte-maison" d="M184 262v-30a16 16 0 0 1 32 0v30z"/>
+      </g>
+      <!-- une silhouette passe parfois derrière une fenêtre -->
+      <g class="ombre-fenetre">
+        <circle cx="249" cy="184" r="5" fill="#0a0510"/>
+        <path d="M241 206v-10a8 8 0 0 1 16 0v10z" fill="#0a0510"/>
+      </g>
+      <g fill="#08040d">
+        <path d="M336 300v-24a10 10 0 0 1 20 0v24z"/>
+        <path d="M362 300v-16a8 8 0 0 1 16 0v16z"/>
+      </g>
+    </svg>
+
+    <div class="spectre spectre-1"><svg><use href="#s-fantome"/></svg></div>
+    <div class="spectre spectre-2"><svg><use href="#s-fantome"/></svg></div>
+    <div class="spectre spectre-3"><svg><use href="#s-fantome"/></svg></div>
+
+    <div class="brouillard brouillard-1"></div>
+    <div class="brouillard brouillard-2"></div>
+    <div class="brouillard brouillard-3"></div>
+
+    <svg class="citrouille citrouille-gauche"><use href="#s-citrouille"/></svg>
+    <svg class="citrouille citrouille-droite"><use href="#s-citrouille"/></svg>
+
+    <div class="vignette"></div>
+  </div>
+
+  <!-- Calques d'effets (flash rouge, particules) -->
+  <div class="flash" id="flash" aria-hidden="true"></div>
+  <div class="calque-particules" id="particules" aria-hidden="true"></div>
+
+  <main>
+    <!-- =========================================================
+         2. ÉCRAN D'ACCUEIL
+         ========================================================= -->
+    <section id="ecran-accueil" class="ecran ecran-accueil" aria-labelledby="titre-jeu">
+      <button type="button" class="btn-son btn-son-accueil" data-son aria-pressed="true">
+        <span class="btn-son-icone" aria-hidden="true"></span><span class="sr-only">Son activé</span>
+      </button>
+
+      <div class="accueil-contenu">
+        <p class="surtitre">Club de Vibe Coding · LPELIA</p>
+        <h1 id="titre-jeu" class="titre-jeu">
+          <span class="titre-petit">La Maison</span>
+          <span class="titre-grand">Hantée</span>
+        </h1>
+        <p class="sous-titre">Les 7 Secrets</p>
+        <p class="pitch">Minuit sonne. La porte claque derrière toi et se verrouille. Perce les sept secrets de la maison avant que ta bougie ne s'éteigne.</p>
+        <ul class="regles">
+          <li><strong>7</strong><span>énigmes</span></li>
+          <li><strong>180</strong><span>secondes</span></li>
+          <li><strong>2</strong><span>indices par salle</span></li>
+        </ul>
+        <button type="button" id="btn-commencer" class="btn btn-principal btn-commencer">Commencer l'aventure</button>
+        <p class="record-accueil" id="record-accueil" hidden>Record à battre : <strong id="record-accueil-valeur">0</strong> points</p>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         3. ÉCRAN DE JEU
+         ========================================================= -->
+    <section id="ecran-jeu" class="ecran ecran-jeu" aria-label="Partie en cours" hidden>
+      <header class="hud">
+        <div class="hud-bloc hud-chrono" id="hud-chrono">
+          <div class="bougie" aria-hidden="true">
+            <span class="flamme"></span>
+            <span class="meche"></span>
+            <span class="cire" id="cire"></span>
+          </div>
+          <div class="hud-texte">
+            <span class="hud-label">Temps</span>
+            <span class="hud-valeur" id="chrono">3:00</span>
+          </div>
+        </div>
+        <div class="hud-bloc hud-salle">
+          <span class="hud-label">Salle</span>
+          <span class="hud-valeur" id="hud-salle">I / VII</span>
+        </div>
+        <div class="hud-bloc hud-score">
+          <span class="hud-label">Score</span>
+          <span class="hud-valeur" id="score">0</span>
+        </div>
+        <button type="button" class="btn-son" data-son aria-pressed="true">
+          <span class="btn-son-icone" aria-hidden="true"></span><span class="sr-only">Son activé</span>
+        </button>
+      </header>
+
+      <div class="progression" id="progression" role="progressbar" aria-label="Secrets percés"
+           aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" aria-valuetext="0 secret sur 7">
+        <div class="progression-rail"><div class="progression-remplissage" id="progression-remplissage"></div></div>
+        <ol class="sceaux" id="sceaux"></ol>
+      </div>
+
+      <article class="carte" id="carte" aria-labelledby="salle-titre">
+        <p class="carte-surtitre" id="salle-numero">Salle I</p>
+        <h2 class="carte-titre" id="salle-titre" tabindex="-1">Le Hall d'entrée</h2>
+        <p class="carte-histoire" id="salle-histoire"></p>
+        <div class="carte-visuel" id="salle-visuel" data-indices="0"></div>
+        <p class="carte-question" id="salle-question"></p>
+
+        <form class="formulaire" id="formulaire" autocomplete="off" novalidate>
+          <label for="reponse" class="label-reponse">Ta réponse</label>
+          <div class="champ-ligne">
+            <input id="reponse" name="reponse" type="text" maxlength="40"
+                   autocomplete="off" autocapitalize="off" autocorrect="off"
+                   spellcheck="false" enterkeyhint="done">
+            <button type="submit" class="btn btn-principal" id="btn-valider">Valider</button>
+          </div>
+        </form>
+
+        <div class="zone-indice">
+          <button type="button" class="btn btn-secondaire" id="btn-indice">Demander un indice</button>
+          <span class="indices-restants" id="indices-restants">2 restants · −25 pts chacun</span>
+        </div>
+        <ul class="indices" id="indices"></ul>
+
+        <p class="retour" id="retour" role="status" aria-live="polite"></p>
+        <div class="tampon" id="tampon" aria-hidden="true">Résolu</div>
+      </article>
+    </section>
+
+    <!-- =========================================================
+         4. ÉCRAN DE VICTOIRE
+         ========================================================= -->
+    <section id="ecran-victoire" class="ecran ecran-fin ecran-victoire" aria-labelledby="titre-victoire" hidden>
+      <div class="fin-contenu">
+        <div class="porte-ouverte" aria-hidden="true">
+          <div class="lumiere-aube"></div>
+          <div class="battant battant-gauche"></div>
+          <div class="battant battant-droit"></div>
+        </div>
+        <p class="surtitre">Les 7 secrets sont percés</p>
+        <h2 id="titre-victoire" class="titre-fin" tabindex="-1">Tu es libre !</h2>
+        <p class="fin-texte">La grande porte s'ouvre sur l'aube. La maison te laisse partir… pour cette année.</p>
+
+        <div class="score-final">
+          <span class="score-label">Score final</span>
+          <span class="score-grand" id="v-score">0</span>
+          <span class="rang" id="v-rang"></span>
+          <span class="nouveau-record" id="v-nouveau" hidden>Nouveau record !</span>
+        </div>
+
+        <dl class="stats">
+          <div><dt>Énigmes</dt><dd id="v-enigmes">7 / 7</dd></div>
+          <div><dt>Temps restant</dt><dd id="v-temps">0 s</dd></div>
+          <div><dt>Bonus temps</dt><dd id="v-bonus">+0</dd></div>
+          <div><dt>Indices</dt><dd id="v-indices">0</dd></div>
+          <div><dt>Erreurs</dt><dd id="v-erreurs">0</dd></div>
+          <div><dt>Record</dt><dd id="v-record">0</dd></div>
+        </dl>
+
+        <div class="fin-actions">
+          <button type="button" class="btn btn-principal" data-action="rejouer">Rejouer</button>
+          <button type="button" class="btn btn-secondaire" data-action="accueil">Accueil</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         5. ÉCRAN DE DÉFAITE
+         ========================================================= -->
+    <section id="ecran-defaite" class="ecran ecran-fin ecran-defaite" aria-labelledby="titre-defaite" hidden>
+      <div class="fin-contenu">
+        <div class="bougie-eteinte" aria-hidden="true">
+          <span class="fumee"></span><span class="fumee"></span><span class="fumee"></span>
+          <span class="meche"></span>
+          <span class="cire"></span>
+        </div>
+        <p class="surtitre">Le temps est écoulé</p>
+        <h2 id="titre-defaite" class="titre-fin" tabindex="-1">La maison te garde…</h2>
+        <p class="fin-texte">Ta bougie s'est éteinte en <strong id="d-salle">salle I</strong>. Les fantômes ont un nouveau colocataire.</p>
+        <p class="solution">La réponse était : <strong id="d-solution"></strong></p>
+
+        <div class="score-final">
+          <span class="score-label">Score</span>
+          <span class="score-grand" id="d-score">0</span>
+        </div>
+
+        <dl class="stats stats-courtes">
+          <div><dt>Énigmes</dt><dd id="d-enigmes">0 / 7</dd></div>
+          <div><dt>Indices</dt><dd id="d-indices">0</dd></div>
+          <div><dt>Erreurs</dt><dd id="d-erreurs">0</dd></div>
+        </dl>
+
+        <div class="fin-actions">
+          <button type="button" class="btn btn-principal" data-action="rejouer">Réessayer</button>
+          <button type="button" class="btn btn-secondaire" data-action="accueil">Accueil</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Le fantôme moqueur qui surgit après une mauvaise réponse -->
+  <div class="fantome-moqueur" id="fantome-moqueur" aria-hidden="true">
+    <svg><use href="#s-fantome"/></svg>
+    <span class="bulle-moqueur" id="bulle-moqueur">Hihihi !</span>
+  </div>
+
+  <!-- Annonces vocales pour les lecteurs d'écran (temps restant) -->
+  <p class="sr-only" id="annonce" aria-live="assertive"></p>
+</div>
+</body>
+</html>
