@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>La Maison Hantée</title>
-  <meta name="description" content="Jeu d'énigmes d'Halloween : perce les 7 secrets de la maison hantée en 180 secondes. Club de Vibe Coding du LPELIA.">
+  <meta name="description" content="Jeu d'énigmes d'Halloween : perce les 10 secrets de la maison hantée en 180 secondes. Club de Vibe Coding du LPELIA.">
   <meta name="theme-color" content="#0b0612">
 
   <!-- Polices (facultatif : sans Internet, le jeu utilise des polices de secours) -->
@@ -133,10 +133,10 @@
           <span class="titre-petit">La Maison</span>
           <span class="titre-grand">Hantée</span>
         </h1>
-        <p class="sous-titre">Les 7 Secrets</p>
-        <p class="pitch">Minuit sonne. La porte claque derrière toi et se verrouille. Perce les sept secrets de la maison avant que ta bougie ne s'éteigne.</p>
+        <p class="sous-titre">Les 10 Secrets</p>
+        <p class="pitch">Minuit sonne. La porte claque derrière toi et se verrouille. Perce les dix secrets de la maison avant que ta bougie ne s'éteigne.</p>
         <ul class="regles">
-          <li><strong>7</strong><span>énigmes</span></li>
+          <li><strong>10</strong><span>énigmes</span></li>
           <li><strong>180</strong><span>secondes</span></li>
           <li><strong>2</strong><span>indices par salle</span></li>
         </ul>
@@ -163,7 +163,7 @@
         </div>
         <div class="hud-bloc hud-salle">
           <span class="hud-label">Salle</span>
-          <span class="hud-valeur" id="hud-salle">I / VII</span>
+          <span class="hud-valeur" id="hud-salle">I / X</span>
         </div>
         <div class="hud-bloc hud-score">
           <span class="hud-label">Score</span>
@@ -175,7 +175,7 @@
       </header>
 
       <div class="progression" id="progression" role="progressbar" aria-label="Secrets percés"
-           aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" aria-valuetext="0 secret sur 7">
+           aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" aria-valuetext="0 secret sur 10">
         <div class="progression-rail"><div class="progression-remplissage" id="progression-remplissage"></div></div>
         <ol class="sceaux" id="sceaux"></ol>
       </div>
@@ -218,7 +218,7 @@
           <div class="battant battant-gauche"></div>
           <div class="battant battant-droit"></div>
         </div>
-        <p class="surtitre">Les 7 secrets sont percés</p>
+        <p class="surtitre">Les 10 secrets sont percés</p>
         <h2 id="titre-victoire" class="titre-fin" tabindex="-1">Tu es libre !</h2>
         <p class="fin-texte">La grande porte s'ouvre sur l'aube. La maison te laisse partir… pour cette année.</p>
 
@@ -230,7 +230,7 @@
         </div>
 
         <dl class="stats">
-          <div><dt>Énigmes</dt><dd id="v-enigmes">7 / 7</dd></div>
+          <div><dt>Énigmes</dt><dd id="v-enigmes">10 / 10</dd></div>
           <div><dt>Temps restant</dt><dd id="v-temps">0 s</dd></div>
           <div><dt>Bonus temps</dt><dd id="v-bonus">+0</dd></div>
           <div><dt>Indices</dt><dd id="v-indices">0</dd></div>
@@ -266,7 +266,7 @@
         </div>
 
         <dl class="stats stats-courtes">
-          <div><dt>Énigmes</dt><dd id="d-enigmes">0 / 7</dd></div>
+          <div><dt>Énigmes</dt><dd id="d-enigmes">0 / 10</dd></div>
           <div><dt>Indices</dt><dd id="d-indices">0</dd></div>
           <div><dt>Erreurs</dt><dd id="d-erreurs">0</dd></div>
         </dl>

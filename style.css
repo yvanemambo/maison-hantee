@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LA MAISON HANTÉE — Les 7 Secrets
+   LA MAISON HANTÉE — Les 10 Secrets
    Feuille de style (design, animations, responsive)
    Club de Vibe Coding du LPELIA
    ========================================================================== */
@@ -670,12 +670,12 @@ button, input { font: inherit; color: inherit; }
 }
 @keyframes alerte-chrono { 50% { transform: scale(1.12); } }
 
-/* --- Progression : 7 sceaux reliés par un rail --- */
+/* --- Progression : 10 sceaux reliés par un rail --- */
 .progression { position: relative; width: 100%; max-width: 680px; padding-block: 2px; }
 .progression-rail {
   position: absolute;
-  left: calc(100% / 14);
-  right: calc(100% / 14);
+  left: calc(100% / 20);
+  right: calc(100% / 20);
   top: 50%;
   height: 3px;
   transform: translateY(-50%);
@@ -696,18 +696,18 @@ button, input { font: inherit; color: inherit; }
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(10, 1fr);
 }
 .sceau { display: grid; place-items: center; }
 .sceau span {
-  width: clamp(28px, 8vw, 34px);
+  width: clamp(26px, 7.2vw, 34px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   border-radius: 50%;
   font-family: var(--police-titre);
   font-weight: 700;
-  font-size: clamp(.8rem, 2.6vw, .95rem);
+  font-size: clamp(.64rem, 2.2vw, .9rem);
   color: var(--brume);
   background: var(--aubergine);
   box-shadow: inset 0 0 0 1.5px rgb(var(--brume-rgb) / .3);
@@ -929,7 +929,7 @@ button, input { font: inherit; color: inherit; }
 @keyframes tampon { to { opacity: 1; transform: rotate(-12deg) scale(1); } }
 
 /* ==========================================================================
-   7. LES VISUELS DES 7 ÉNIGMES
+   7. LES VISUELS DES 10 ÉNIGMES
    ========================================================================== */
 .note-visuel {
   margin: 12px 0 0;
@@ -1213,7 +1213,151 @@ button, input { font: inherit; color: inherit; }
 }
 .resolu .miroir { box-shadow: 0 0 0 3px #2a1a08, inset 0 0 40px rgb(30 20 50 / .4), 0 0 40px rgb(var(--feu-follet-rgb) / .6); }
 
-/* --- Salle VII : la tablette et le cadenas --- */
+/* --- Salle VII : l'horloge du salon --- */
+.salon {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px 24px;
+}
+.horloge {
+  position: relative;
+  width: 150px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f4e6c4 0 60%, #d8c08e 61% 64%, #6b4423 65% 100%);
+  box-shadow: 0 0 0 4px #2a1a08, inset 0 0 18px rgb(0 0 0 / .45), 0 0 34px rgb(var(--braise-rgb) / .25);
+}
+.chiffre-horloge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--encre);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(-36px) rotate(calc(var(--a) * -1));
+}
+.aiguille {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  border-radius: 3px;
+  background: #1a0e06;
+  transform-origin: 50% 100%;
+}
+.aiguille-heures {
+  width: 6px;
+  height: 18px;
+  margin-left: -3px;
+  transform: rotate(300deg);     /* 10 heures */
+  transition: transform 1.4s cubic-bezier(.3, 1.3, .5, 1);
+}
+.aiguille-minutes { width: 4px; height: 25px; margin-left: -2px; transform: rotate(0deg); }
+.axe-horloge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--citrouille);
+}
+.resolu .aiguille-heures { transform: rotate(450deg); }   /* avance jusqu'à 3 heures */
+.resolu .horloge { box-shadow: 0 0 0 4px #2a1a08, inset 0 0 18px rgb(0 0 0 / .45), 0 0 40px rgb(var(--feu-follet-rgb) / .6); }
+.gravure { margin: 0; font-style: italic; font-size: 1.05rem; color: var(--spectre); }
+.gravure strong { color: var(--braise); font-style: normal; }
+
+/* --- Salle VIII : la pierre tombale --- */
+.tombe {
+  position: relative;
+  max-width: 300px;
+  margin: 0 auto 10px;
+  padding: 26px 18px 24px;
+  text-align: center;
+  border-radius: 140px 140px 10px 10px;
+  background: linear-gradient(180deg, #6f6882, #3b3546);
+  box-shadow: inset 0 0 0 3px rgb(255 255 255 / .05), inset 0 -16px 24px rgb(0 0 0 / .45), 0 16px 28px -10px rgb(0 0 0 / .9);
+}
+.tombe::after {
+  content: "";
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  bottom: -10px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #26341c, #121b0c 65%, transparent 70%);
+}
+.tombe-rip {
+  margin: 0;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: rgb(235 230 245 / .55);
+  text-shadow: 0 -1px 0 rgb(0 0 0 / .6);
+}
+.tombe-epitaphe {
+  margin: 6px 0 16px;
+  font-style: italic;
+  font-size: .98rem;
+  line-height: 1.35;
+  color: rgb(235 230 245 / .85);
+}
+.lettres-tombe { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.lettre-bronze {
+  width: 42px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: 1.7rem;
+  color: #3a2205;
+  background: linear-gradient(160deg, #f2c46a, #b07a22 55%, #6e4510);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 4px 8px rgb(0 0 0 / .5);
+  transform: rotate(var(--r, 0deg));
+  transition: transform 500ms cubic-bezier(.3, 1.5, .5, 1), box-shadow 500ms;
+}
+.resolu .lettre-bronze { transform: none; box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 0 16px rgb(var(--feu-follet-rgb) / .7); }
+
+/* --- Salle IX : le tableau noir du laboratoire --- */
+.tableau-noir {
+  padding: 18px 16px;
+  text-align: center;
+  border-radius: 8px;
+  border: 10px solid #6b4423;
+  background: radial-gradient(ellipse at 30% 20%, #3b4b3f, #1e2921 70%);
+  box-shadow: inset 0 0 30px rgb(0 0 0 / .6), 0 14px 26px -10px rgb(0 0 0 / .9);
+  color: #e8efe6;
+}
+.craie-regle { margin: 0; font-family: var(--police-ui); font-weight: 500; font-size: .95rem; line-height: 1.45; color: rgb(232 239 230 / .88); }
+.code-craie { display: flex; justify-content: center; gap: 16px; margin: 14px 0 10px; }
+.code-craie span {
+  min-width: 1ch;
+  font-family: var(--police-titre);
+  font-weight: 900;
+  font-size: clamp(2.1rem, 9vw, 2.6rem);
+  line-height: 1;
+  color: #f4f8f2;
+  text-shadow: 0 0 2px rgb(255 255 255 / .6);
+  transition: color 400ms, text-shadow 400ms;
+}
+.resolu .code-craie span { color: var(--feu-follet); text-shadow: 0 0 12px rgb(var(--feu-follet-rgb) / .9); }
+.alphabet-craie {
+  margin: 0;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: .8rem;
+  letter-spacing: .08em;
+  color: rgb(232 239 230 / .6);
+}
+
+/* --- Salle X : la tablette et le cadenas --- */
 .tablette {
   max-width: 320px;
   margin-inline: auto;
@@ -1600,7 +1744,7 @@ button, input { font: inherit; color: inherit; }
 
 /* Petits téléphones */
 @media (max-width: 420px) {
-  .cuisine { grid-template-columns: 1fr; }
+  .cuisine, .salon { grid-template-columns: 1fr; }
   .hud { padding-left: 10px; gap: 6px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .stats-courtes { grid-template-columns: repeat(3, 1fr); }

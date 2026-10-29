@@ -1,7 +1,7 @@
-# 🎃 LA MAISON HANTÉE — Les 7 Secrets
+# 🎃 LA MAISON HANTÉE — Les 10 Secrets
 
 Jeu d'énigmes d'Halloween pour le **Club de Vibe Coding du LPELIA**.
-Le joueur est enfermé dans une maison hantée : il doit résoudre 7 énigmes en 180 secondes pour s'échapper.
+Le joueur est enfermé dans une maison hantée : il doit résoudre 10 énigmes (10 niveaux) en 180 secondes pour s'échapper.
 
 Technologies : **HTML + CSS + JavaScript**, sans aucune bibliothèque. Le jeu marche sur ordinateur et sur téléphone.
 
@@ -57,7 +57,7 @@ Tu vois maintenant les fichiers à gauche. Clique sur un fichier pour le lire ou
 | 4 | Tu tapes `LA CITROUILLE` (majuscules) | Acceptée ! Tampon « Résolu », +100, le 1er sceau s'allume |
 | 5 | Tu cliques sur « Demander un indice » | L'indice s'affiche, −25 points (2 indices maximum par salle) |
 | 6 | Tu appuies sur la touche **Entrée** | La réponse est validée comme avec le bouton |
-| 7 | Tu résous les 7 énigmes | Écran de victoire, pluie de bonbons, score final avec bonus de temps |
+| 7 | Tu résous les 10 énigmes | Écran de victoire, pluie de bonbons, score final avec bonus de temps |
 | 8 | Tu cliques sur « Rejouer » | Une nouvelle partie démarre à 3:00, score à 0 |
 | 9 | Tu laisses le temps s'écouler | Sous 30 s le chrono devient rouge ; à 0, écran de défaite avec la réponse |
 | 10 | Tu ouvres le jeu sur ton téléphone | Tout tient dans l'écran, sans défilement de côté |
@@ -81,7 +81,10 @@ Tu vois maintenant les fichiers à gauche. Clique sur un fichier pour le lire ou
 | IV | Les portraits | la comtesse |
 | V | L'escalier : 1, 4, 9, 16 (carrés) | 25 |
 | VI | Le miroir (ERIOMRA à l'envers) | armoire |
-| VII | Le cadenas : 🎃 = 4, 👻 = 6, 🦇 = 5 | 564 |
+| VII | L'horloge : 10 h + 5 h | 3 h (ou 15 h) |
+| VIII | Le cimetière : lettres L I A B A à remettre dans l'ordre | balai |
+| IX | Le tableau noir : O V J U, chaque lettre reculée d'une place | nuit |
+| X | Le cadenas : 🎃 = 4, 👻 = 6, 🦇 = 5 | 564 |
 
 </details>
 
@@ -100,7 +103,7 @@ penaliteErreur: 10,      // pénalité par erreur
 bonusParSeconde: 3,      // bonus final par seconde restante
 ```
 
-**Modifier une énigme** (partie `2. LES 7 ÉNIGMES`) : change le texte de `question`, ajoute des réponses acceptées dans `reponses`, réécris les `indices`. Pas besoin de mettre les accents ou les majuscules dans `reponses` : le jeu les ignore.
+**Modifier une énigme** (partie `2. LES 10 ÉNIGMES`) : change le texte de `question`, ajoute des réponses acceptées dans `reponses`, réécris les `indices`. Pas besoin de mettre les accents ou les majuscules dans `reponses` : le jeu les ignore.
 
 **Calcul du score :** +100 par énigme, −25 par indice, −10 par erreur (jamais sous 0), puis +3 points par seconde restante à la victoire. Le meilleur score est gardé dans le navigateur du joueur.
 
@@ -127,6 +130,13 @@ bonusParSeconde: 3,      // bonus final par seconde restante
 5. Sous **Build and deployment → Source**, choisis **Deploy from a branch**. Choisis la branche **main** et le dossier **/ (root)**, puis **Save**.
 6. Attends 1 à 2 minutes et recharge la page : l'adresse s'affiche, du type `https://ton-pseudo.github.io/maison-hantee/`.
 7. Pour mettre à jour : *Add file → Upload files*, glisse les fichiers modifiés, *Commit changes*.
+
+### Option C — Render (déjà en place pour ce projet)
+
+Le jeu est publié sur Render à partir du dépôt GitHub `yvanemambo/maison-hantee` :
+**https://maison-hantee-lpelia.onrender.com**
+
+Chaque modification envoyée sur la branche `main` du dépôt est republiée automatiquement à la même adresse (réglage dans `render.yaml`).
 
 ### Partager avec le club
 

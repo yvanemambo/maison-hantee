@@ -1,11 +1,11 @@
 /* ==========================================================================
-   LA MAISON HANTÉE — Les 7 Secrets
+   LA MAISON HANTÉE — Les 10 Secrets
    Logique du jeu (JavaScript pur, aucune bibliothèque)
    Club de Vibe Coding du LPELIA
    --------------------------------------------------------------------------
    Plan du fichier :
      1. Réglages du jeu        → change ici la durée, les points…
-     2. Les 7 énigmes          → change ici les questions et les réponses
+     2. Les 10 énigmes         → change ici les questions et les réponses
      3. État de la partie
      4. Vérification des réponses (majuscules et accents ignorés)
      5. Déroulement de la partie (démarrer, valider, indices, chrono…)
@@ -30,10 +30,10 @@ const REGLAGES = {
   delaiTransition: 1300    // pause (ms) après une bonne réponse
 };
 
-const ROMAINS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+const ROMAINS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
 /* ==========================================================================
-   2. LES 7 ÉNIGMES
+   2. LES 10 ÉNIGMES
    Chaque énigme contient :
      salle      : nom de la pièce
      histoire   : petit texte d'ambiance
@@ -181,6 +181,76 @@ const ENIGMES = [
       "C'est un grand meuble où l'on range ses vêtements."
     ],
     placeholder: "Un endroit…"
+  },
+  {
+    salle: "Le Salon de l'horloge",
+    histoire: "Une grande horloge s'est arrêtée au milieu du salon. Sous le cadran, une phrase est gravée dans le bois.",
+    visuel: `
+      <div class="salon">
+        <div class="horloge" role="img" aria-label="Horloge arrêtée : la petite aiguille est sur le 10 et la grande aiguille sur le 12.">
+          <span class="chiffre-horloge" style="--a:0deg">12</span>
+          <span class="chiffre-horloge" style="--a:90deg">3</span>
+          <span class="chiffre-horloge" style="--a:180deg">6</span>
+          <span class="chiffre-horloge" style="--a:270deg">9</span>
+          <span class="aiguille aiguille-heures"></span>
+          <span class="aiguille aiguille-minutes"></span>
+          <span class="axe-horloge"></span>
+        </div>
+        <p class="gravure">« La porte de la cave s'ouvrira <strong>5 heures</strong> après l'heure où je me suis arrêtée. »</p>
+      </div>`,
+    question: "À quelle heure la porte de la cave s'ouvrira-t-elle ?",
+    reponses: ["3", "3h", "3 heure", "3 heures", "3h00", "3 00", "trois", "trois heure", "trois heures",
+               "15", "15h", "15 heure", "15 heures", "15h00", "15 00", "quinze heures"],
+    solution: "3 heures (15 h)",
+    indices: [
+      "L'horloge s'est arrêtée à 10 heures. Avance de 5 heures : 11, 12, 1…",
+      "10 + 5 = 15 heures, c'est-à-dire 3 heures sur le cadran."
+    ],
+    placeholder: "Une heure…"
+  },
+  {
+    salle: "Le Cimetière",
+    histoire: "Derrière la maison, un petit cimetière dort sous la brume. Sur une pierre tombale, des lettres de bronze sont tombées dans le désordre.",
+    visuel: `
+      <div class="tombe">
+        <p class="tombe-rip" aria-hidden="true">R.I.P.</p>
+        <p class="tombe-epitaphe">Ici repose le compagnon de vol de la sorcière</p>
+        <div class="lettres-tombe" role="group" aria-label="Lettres mélangées : L, I, A, B, A">
+          <span class="lettre-bronze" style="--r:-8deg" data-solution="B">L</span>
+          <span class="lettre-bronze" style="--r:6deg"  data-solution="A">I</span>
+          <span class="lettre-bronze" style="--r:-3deg" data-solution="L">A</span>
+          <span class="lettre-bronze" style="--r:9deg"  data-solution="A">B</span>
+          <span class="lettre-bronze" style="--r:-5deg" data-solution="I">A</span>
+        </div>
+      </div>`,
+    question: "Remets les lettres dans l'ordre. Quel mot obtiens-tu ?",
+    reponses: ["balai", "balais"],
+    solution: "Le balai",
+    indices: [
+      "La sorcière s'en sert pour voler dans le ciel… et aussi pour faire le ménage !",
+      "Le mot commence par B et se termine par I."
+    ],
+    placeholder: "Un mot…"
+  },
+  {
+    salle: "Le Laboratoire du savant",
+    histoire: "Des fioles fument sur les étagères. Le savant fou a écrit son mot de passe en code sur le tableau noir.",
+    visuel: `
+      <div class="tableau-noir">
+        <p class="craie-regle">Mon code : chaque lettre a avancé d'une place dans l'alphabet.<br>A devient B, B devient C…</p>
+        <div class="code-craie" role="group" aria-label="Mot codé : O, V, J, U">
+          <span data-solution="N">O</span><span data-solution="U">V</span><span data-solution="I">J</span><span data-solution="T">U</span>
+        </div>
+        <p class="alphabet-craie" aria-hidden="true">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
+      </div>`,
+    question: "Quel est le mot de passe une fois décodé ?",
+    reponses: ["nuit"],
+    solution: "NUIT",
+    indices: [
+      "Recule chaque lettre d'une place dans l'alphabet : O devient N.",
+      "N… U… I… T… C'est le moment où sortent les fantômes !"
+    ],
+    placeholder: "Un mot…"
   },
   {
     salle: "La Porte de sortie",
@@ -363,9 +433,9 @@ function demarrerPartie() {
   Son.jouer('debut');
 }
 
-/** Crée les 7 sceaux de la barre de progression. */
+/** Crée un sceau par énigme dans la barre de progression. */
 function construireSceaux() {
-  el.sceaux.innerHTML = ROMAINS.map((r) => `<li class="sceau"><span>${r}</span></li>`).join('');
+  el.sceaux.innerHTML = ENIGMES.map((_, i) => `<li class="sceau"><span>${ROMAINS[i]}</span></li>`).join('');
   majProgression();
 }
 
@@ -389,14 +459,14 @@ function afficherEnigme(premiere = false) {
   etat.indicesSalle = 0;
   etat.erreursSalle = 0;
 
-  el.salleNumero.textContent = `Salle ${ROMAINS[etat.index]} sur VII`;
+  el.salleNumero.textContent = `Salle ${ROMAINS[etat.index]} sur ${ROMAINS[ENIGMES.length - 1]}`;
   el.salleTitre.textContent = enigme.salle;
   el.salleHistoire.textContent = enigme.histoire;
   el.visuel.innerHTML = enigme.visuel;
   el.visuel.dataset.indices = '0';
   el.visuel.classList.remove('resolu');
   el.question.textContent = enigme.question;
-  el.hudSalle.textContent = `${ROMAINS[etat.index]} / VII`;
+  el.hudSalle.textContent = `${ROMAINS[etat.index]} / ${ROMAINS[ENIGMES.length - 1]}`;
 
   el.champ.value = '';
   el.champ.setAttribute('inputmode', enigme.clavier || 'text');
@@ -633,9 +703,9 @@ function defaite() {
 }
 
 function rangDuJoueur(score) {
-  if (score >= 850) return 'Rang : Légende d\'Halloween';
-  if (score >= 700) return 'Rang : Chasseur de fantômes';
-  if (score >= 500) return 'Rang : Explorateur courageux';
+  if (score >= 1150) return 'Rang : Légende d\'Halloween';
+  if (score >= 950) return 'Rang : Chasseur de fantômes';
+  if (score >= 700) return 'Rang : Explorateur courageux';
   return 'Rang : Survivant tremblant';
 }
 
