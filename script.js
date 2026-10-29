@@ -853,7 +853,6 @@ function creerEtoiles() {
 const Son = (() => {
   let contexte = null;
   let volumeGeneral = null;
-  let nappe = null;          // l'ambiance sonore de fond
   let actif = true;
 
   try {
@@ -893,7 +892,7 @@ const Son = (() => {
   }
 
   const effets = {
-    debut:    () => { note(196, 0, .5, 'triangle', .18); note(233, .18, .6, 'triangle', .16); note(147, .4, 1.1, 'sine', .2); },
+    debut:    () => { note(140, 0, .18, 'square', .1, 45); note(62, 0, .7, 'sine', .35, 32); }, // la porte claque
     bonne:    () => { note(523, 0, .18, 'triangle', .22); note(659, .09, .18, 'triangle', .22); note(784, .18, .35, 'triangle', .22); note(1047, .28, .4, 'sine', .12); },
     mauvaise: () => { note(150, 0, .35, 'sawtooth', .14, 70); note(110, .05, .4, 'square', .06, 60); },
     indice:   () => { note(880, 0, .25, 'sine', .14); note(1320, .08, .35, 'sine', .08); },
@@ -907,30 +906,18 @@ const Son = (() => {
   }
 
   /* ------------------------------------------------------------------
-     MUSIQUE D'HALLOWEEN
-     « Dans l'antre du roi de la montagne », Edvard Grieg (1875).
-     Œuvre du domaine public, rejouée note par note par le navigateur.
-     Comme dans l'original, elle accélère : plus le temps file, plus
-     le tempo monte (de 110 à 200 battements par minute).
+     MUSIQUE EFFRAYANTE
+     Une bande-son d'horreur fabriquée par le navigateur, en 4 couches :
+       1. au début, un orgue d'église joue la Toccata en ré mineur de
+          J.-S. Bach (domaine public), le grand classique de l'épouvante ;
+       2. une boîte à musique désaccordée joue une berceuse sinistre
+          (mélodie originale) qui ralentit et se détraque avec le temps ;
+       3. un grondement grave et un cœur qui bat de plus en plus vite ;
+       4. des bruits au hasard : vent qui hurle, cri lointain, coup sourd,
+          accord d'orgue menaçant… de plus en plus fréquents.
      ------------------------------------------------------------------ */
-  // Mélodie en la mineur : [note, durée en croches]
-  const THEME_LA = [
-    ['A3', 1], ['B3', 1], ['C4', 1], ['D4', 1], ['E4', 1], ['C4', 1], ['E4', 2],
-    ['D#4', 1], ['B3', 1], ['D#4', 2], ['D4', 1], ['A#3', 1], ['D4', 2],
-    ['A3', 1], ['B3', 1], ['C4', 1], ['D4', 1], ['E4', 1], ['C4', 1], ['E4', 1], ['A4', 1],
-    ['G4', 1], ['E4', 1], ['C4', 1], ['E4', 1], ['G4', 4]
-  ];
-  // Même thème une quinte plus haut (mi mineur)
-  const THEME_MI = [
-    ['E4', 1], ['F#4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['G4', 1], ['B4', 2],
-    ['A#4', 1], ['F#4', 1], ['A#4', 2], ['A4', 1], ['F4', 1], ['A4', 2],
-    ['E4', 1], ['F#4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['G4', 1], ['B4', 1], ['E5', 1],
-    ['D5', 1], ['B4', 1], ['G4', 1], ['B4', 1], ['D5', 4]
-  ];
-  const BASSE_LA = ['A2', 'E2', 'A2', 'E2'];   // une note de basse par temps
-  const BASSE_MI = ['E2', 'B2', 'E2', 'B2'];
 
-  /** Convertit un nom de note (ex. "D#4") en fréquence (Hz). */
+  /** Convertit un nom de note (ex. "C#4") en fréquence (Hz). */
   function frequenceDe(nom) {
     const demiTons = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
     const [, lettre, octave] = nom.match(/^([A-G]#?)(\d)$/);
@@ -938,33 +925,50 @@ const Son = (() => {
     return 440 * Math.pow(2, (midi - 69) / 12);
   }
 
-  /** Transforme les thèmes en une suite de « pas » (un pas = une croche). */
-  function construirePartition() {
-    const pas = [];
-    const ajouter = (theme, basse) => {
-      const debut = pas.length;
-      theme.forEach(([nom, duree]) => {
-        pas.push({ melodie: frequenceDe(nom), duree });
-        for (let i = 1; i < duree; i++) pas.push({});
-      });
-      for (let i = debut; i < pas.length; i++) {
-        const dansLaMesure = (i - debut) % 8;
-        if (dansLaMesure % 2 === 0) pas[i].basse = frequenceDe(basse[dansLaMesure / 2]);
-        if (dansLaMesure === 0) pas[i].timbale = true;
-      }
-    };
-    ajouter(THEME_LA, BASSE_LA);
-    ajouter(THEME_LA, BASSE_LA);
-    ajouter(THEME_MI, BASSE_MI);
-    ajouter(THEME_LA, BASSE_LA);
-    return pas;
+  // La berceuse de la boîte à musique (ré mineur, à 3 temps) : [note, durée en temps]
+  const MELODIE_BERCEUSE = [
+    ['D5', 1], ['F5', 1], ['A5', 1],   ['G#5', 1], ['A5', 1], ['F5', 1],
+    ['E5', 1], ['F5', 1], ['D5', 1],   ['C#5', 3],
+    ['D5', 1], ['F5', 1], ['A5', 1],   ['A#5', 1], ['A5', 1], ['G5', 1],
+    ['F5', 1], ['E5', 1], ['C#5', 1],  ['D5', 3],
+    ['A4', 1], ['D5', 1], ['F5', 1],   ['E5', 1], ['D5', 1], ['C#5', 1],
+    ['D5', 1], ['A#4', 1], ['G4', 1],  ['A4', 2], [null, 1],
+    ['G4', 1], ['A#4', 1], ['D5', 1],  ['C#5', 1], ['E5', 1], ['G5', 1],
+    ['F5', 1], ['E5', 1], ['C#5', 1],  ['D5', 3],
+    [null, 6]                           // un silence inquiétant avant de recommencer
+  ];
+  // Une note grave au début de chaque mesure
+  const BASSES_BERCEUSE = ['D4', 'D4', 'D4', 'A3', 'D4', 'A#3', 'A3', 'D4',
+                           'D4', 'A3', 'G3', 'A3', 'G3', 'A3', 'A3', 'D4'];
+
+  function construireBerceuse() {
+    const notes = [];
+    let temps = 0;
+    MELODIE_BERCEUSE.forEach(([nom, duree]) => {
+      const mesure = temps / 3;
+      const basse = Number.isInteger(mesure) && BASSES_BERCEUSE[mesure];
+      notes.push({ frequence: nom ? frequenceDe(nom) : null, duree, basse: basse ? frequenceDe(basse) : null });
+      temps += duree;
+    });
+    return notes;
+  }
+  const BERCEUSE = construireBerceuse();
+
+  const musique = { active: false, minuteur: null, reste: 1, battements: 0 };
+
+  /** Bruit blanc (souffle) utilisé pour le vent et les coups. */
+  function bruitBlanc() {
+    if (!musique.bruit) {
+      const buffer = contexte.createBuffer(1, contexte.sampleRate * 2, contexte.sampleRate);
+      const donnees = buffer.getChannelData(0);
+      for (let i = 0; i < donnees.length; i++) donnees[i] = Math.random() * 2 - 1;
+      musique.bruit = buffer;
+    }
+    return musique.bruit;
   }
 
-  const PARTITION = construirePartition();
-  const musique = { active: false, minuteur: null, bus: null, pas: 0, prochain: 0, tempo: 110 };
-
-  /** Une note d'instrument, jouée à un instant précis t (en secondes audio). */
-  function voix(frequence, t, duree, type, volume, filtreHz) {
+  /** Note tenue (orgue, accords) : attaque, tenue, puis extinction. */
+  function voixTenue(frequence, t, duree, type, volume, filtreHz, attaque = 0.03) {
     const osc = contexte.createOscillator();
     const filtre = contexte.createBiquadFilter();
     const gain = contexte.createGain();
@@ -973,118 +977,282 @@ const Son = (() => {
     filtre.type = 'lowpass';
     filtre.frequency.value = filtreHz;
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(volume, t + 0.012);          // attaque rapide
-    gain.gain.exponentialRampToValueAtTime(volume * 0.6, t + duree * 0.6); // la note tient
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + duree);          // puis s'éteint
+    gain.gain.linearRampToValueAtTime(volume, t + attaque);
+    gain.gain.setValueAtTime(volume, t + duree);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duree + 0.3);
     osc.connect(filtre);
     filtre.connect(gain);
-    gain.connect(musique.bus);
+    gain.connect(musique.entree);
+    osc.start(t);
+    osc.stop(t + duree + 0.35);
+  }
+
+  /** Son percussif qui glisse d'une fréquence à une autre (cœur, coups). */
+  function coupSourd(f0, f1, t, duree, type, volume) {
+    const osc = contexte.createOscillator();
+    const gain = contexte.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f0, t);
+    osc.frequency.exponentialRampToValueAtTime(f1, t + duree * 0.8);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(volume, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    osc.connect(gain);
+    gain.connect(musique.entree);
     osc.start(t);
     osc.stop(t + duree + 0.05);
   }
 
-  function timbale(t) {
-    const osc = contexte.createOscillator();
-    const gain = contexte.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(95, t);
-    osc.frequency.exponentialRampToValueAtTime(48, t + 0.3);
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.38, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
-    osc.connect(gain);
-    gain.connect(musique.bus);
-    osc.start(t);
-    osc.stop(t + 0.45);
+  /** Un orgue : trois tuyaux qui sonnent ensemble. */
+  function orgue(frequence, t, duree, volume, attaque) {
+    voixTenue(frequence, t, duree, 'sawtooth', volume, 2600, attaque);
+    voixTenue(frequence / 2, t, duree, 'square', volume * 0.6, 1800, attaque);
+    voixTenue(frequence * 2, t, duree, 'sine', volume * 0.5, 4000, attaque);
   }
 
-  /** Joue un pas de la partition. */
-  function jouerPas(pas, t, croche) {
-    if (pas.melodie) {
-      const duree = Math.max(0.1, croche * pas.duree * 0.85);   // notes bien détachées, façon pizzicato
-      voix(pas.melodie, t, duree, 'square', 0.13, 1600);
-      voix(pas.melodie / 2, t, duree, 'triangle', 0.14, 900);
+  /** L'ouverture : la Toccata en ré mineur de Bach (domaine public). */
+  function toccata(t0) {
+    const phrase = [
+      ['A4', 0, 0.12], ['G4', 0.12, 0.12], ['A4', 0.24, 1.1],
+      ['G4', 1.6, 0.11], ['F4', 1.71, 0.11], ['E4', 1.82, 0.11], ['D4', 1.93, 0.11],
+      ['C#4', 2.04, 0.55], ['D4', 2.65, 1.5]
+    ];
+    phrase.forEach(([nom, debut, duree]) => {
+      const f = frequenceDe(nom);
+      orgue(f, t0 + debut, duree, 0.05);
+      orgue(f * 2, t0 + debut, duree, 0.04);
+    });
+    // le grand accord diminué, sur une pédale grave de ré
+    ['D2', 'C#4', 'E4', 'G4', 'A#4'].forEach((nom) => orgue(frequenceDe(nom), t0 + 4.6, 2.4, 0.032));
+  }
+
+  /** Une note de boîte à musique, de plus en plus désaccordée. */
+  function noteBoite(frequence, t, volume) {
+    const fausseNote = (Math.random() * 14 - 7) - (1 - musique.reste) * 45; // en centièmes de demi-ton
+    const f = frequence * Math.pow(2, fausseNote / 1200);
+    [[1, 1, 1.6], [2, 0.18, 0.9], [3.01, 0.22, 0.5]].forEach(([multiple, part, extinction]) => {
+      const osc = contexte.createOscillator();
+      const gain = contexte.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f * multiple, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(volume * part, t + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + extinction);
+      osc.connect(gain);
+      gain.connect(musique.entree);
+      osc.start(t);
+      osc.stop(t + extinction + 0.05);
+    });
+  }
+
+  /** Le cœur : « boum-boum ». */
+  function battementCoeur(t) {
+    [[0, 1], [0.17, 0.7]].forEach(([decalage, force]) => {
+      coupSourd(85, 42, t + decalage, 0.22, 'sine', 0.5 * force);
+      coupSourd(170, 85, t + decalage, 0.12, 'triangle', 0.1 * force); // audible sur un haut-parleur de téléphone
+    });
+    musique.battements++;
+  }
+
+  /** Les bruits étranges qui surgissent au hasard. */
+  const BRUITS = {
+    vent(t) {
+      const source = contexte.createBufferSource();
+      const filtre = contexte.createBiquadFilter();
+      const gain = contexte.createGain();
+      source.buffer = bruitBlanc();
+      source.loop = true;
+      filtre.type = 'bandpass';
+      filtre.Q.value = 1.4;
+      filtre.frequency.setValueAtTime(300, t);
+      filtre.frequency.exponentialRampToValueAtTime(1200, t + 1.6);
+      filtre.frequency.exponentialRampToValueAtTime(260, t + 3.6);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.22, t + 1.5);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 3.8);
+      source.connect(filtre);
+      filtre.connect(gain);
+      gain.connect(musique.entree);
+      source.start(t);
+      source.stop(t + 4);
+    },
+    cri(t) {
+      const osc = contexte.createOscillator();
+      const vibrato = contexte.createOscillator();
+      const profondeur = contexte.createGain();
+      const filtre = contexte.createBiquadFilter();
+      const gain = contexte.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1250, t);
+      osc.frequency.exponentialRampToValueAtTime(1850, t + 2.2);
+      vibrato.frequency.value = 7;
+      profondeur.gain.value = 28;
+      vibrato.connect(profondeur);
+      profondeur.connect(osc.frequency);
+      filtre.type = 'bandpass';
+      filtre.frequency.value = 1800;
+      filtre.Q.value = 3;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.06, t + 0.9);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
+      osc.connect(filtre);
+      filtre.connect(gain);
+      gain.connect(musique.entree);
+      osc.start(t);
+      vibrato.start(t);
+      osc.stop(t + 2.6);
+      vibrato.stop(t + 2.6);
+    },
+    coup(t) {
+      coupSourd(70, 28, t, 1.5, 'sine', 0.55);
+      const source = contexte.createBufferSource();
+      const filtre = contexte.createBiquadFilter();
+      const gain = contexte.createGain();
+      source.buffer = bruitBlanc();
+      filtre.type = 'lowpass';
+      filtre.frequency.value = 500;
+      gain.gain.setValueAtTime(0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      source.connect(filtre);
+      filtre.connect(gain);
+      gain.connect(musique.entree);
+      source.start(t);
+      source.stop(t + 0.7);
+    },
+    accord(t) {
+      // accord diminué qui enfle lentement, puis s'éteint
+      ['D3', 'F3', 'G#3', 'B3'].forEach((nom) => orgue(frequenceDe(nom), t, 2.2, 0.03, 1.4));
     }
-    if (pas.basse) voix(pas.basse, t, croche * 1.6, 'triangle', 0.24, 500);
-    if (pas.timbale) timbale(t);
+  };
+
+  /** Le grondement grave continu (ré et la bémol : l'intervalle « du diable »). */
+  function demarrerGrondement(t) {
+    const filtre = contexte.createBiquadFilter();
+    const lfo = contexte.createOscillator();
+    const profondeurLfo = contexte.createGain();
+    const gain = contexte.createGain();
+    filtre.type = 'lowpass';
+    filtre.frequency.value = 240;
+    filtre.Q.value = 2.5;
+    lfo.frequency.value = 0.06;
+    profondeurLfo.gain.value = 140;
+    lfo.connect(profondeurLfo);
+    profondeurLfo.connect(filtre.frequency);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.06, t + 3);
+    const oscs = [[73.42, 'sawtooth'], [103.83, 'sawtooth'], [36.71, 'sine']].map(([f, type]) => {
+      const o = contexte.createOscillator();
+      o.type = type;
+      o.frequency.value = f;
+      o.connect(type === 'sine' ? gain : filtre);
+      o.start(t);
+      return o;
+    });
+    filtre.connect(gain);
+    gain.connect(musique.entree);
+    lfo.start(t);
+    musique.grondement = { oscs: [...oscs, lfo], filtre };
   }
 
   /** Programme les notes un petit peu en avance pour un rythme parfait. */
   function planifierMusique() {
     if (!musique.active) return;
     const maintenant = contexte.currentTime;
-    if (musique.prochain < maintenant - 0.05) musique.prochain = maintenant + 0.05;
-    while (musique.prochain < maintenant + 0.15) {
-      const croche = 60 / musique.tempo / 2;
-      jouerPas(PARTITION[musique.pas % PARTITION.length], musique.prochain, croche);
-      musique.prochain += croche;
-      musique.pas++;
+    const horizon = maintenant + 0.15;
+
+    // la boîte à musique ralentit avec le temps (0,5 s → 0,75 s par temps)
+    if (musique.boite.prochain < maintenant - 0.2) musique.boite.prochain = maintenant + 0.05;
+    while (musique.boite.prochain < horizon) {
+      const note = BERCEUSE[musique.boite.index % BERCEUSE.length];
+      if (note.frequence) noteBoite(note.frequence, musique.boite.prochain, 0.2);
+      if (note.basse) noteBoite(note.basse, musique.boite.prochain, 0.11);
+      musique.boite.prochain += note.duree * (0.5 + (1 - musique.reste) * 0.25);
+      musique.boite.index++;
+    }
+
+    // le cœur accélère avec le temps (58 → 150 battements par minute)
+    if (musique.coeur < maintenant - 0.2) musique.coeur = maintenant + 0.05;
+    while (musique.coeur < horizon) {
+      battementCoeur(musique.coeur);
+      musique.coeur += 60 / musique.bpm;
+    }
+
+    // un bruit étrange de temps en temps, de plus en plus souvent
+    if (musique.prochainBruit < horizon) {
+      const noms = Object.keys(BRUITS);
+      BRUITS[noms[Math.floor(Math.random() * noms.length)]](Math.max(musique.prochainBruit, maintenant));
+      musique.prochainBruit += 5 + Math.random() * (4 + 8 * musique.reste);
     }
   }
 
   /** Lance ou arrête la musique (avec un fondu). */
   function jouerMusique(allumer) {
     if (!contexte) return;
+    const t = contexte.currentTime;
     if (allumer && !musique.active) {
-      musique.bus = contexte.createGain();
-      musique.bus.gain.setValueAtTime(0, contexte.currentTime);
-      musique.bus.gain.linearRampToValueAtTime(1, contexte.currentTime + 1.5);
-      musique.bus.connect(volumeGeneral);
-      musique.active = true;
-      musique.pas = 0;
-      musique.tempo = 110;
-      musique.prochain = contexte.currentTime + 0.1;
+      // entree → sortie (son direct) + écho de cathédrale
+      musique.entree = contexte.createGain();
+      musique.sortie = contexte.createGain();
+      const echo = contexte.createDelay(1);
+      const retour = contexte.createGain();
+      const humide = contexte.createGain();
+      echo.delayTime.value = 0.28;
+      retour.gain.value = 0.38;
+      humide.gain.value = 0.35;
+      musique.entree.connect(musique.sortie);
+      musique.entree.connect(echo);
+      echo.connect(retour);
+      retour.connect(echo);
+      echo.connect(humide);
+      humide.connect(musique.sortie);
+      musique.sortie.gain.setValueAtTime(0, t);
+      musique.sortie.gain.linearRampToValueAtTime(1, t + 0.3);
+      musique.sortie.connect(volumeGeneral);
+
+      Object.assign(musique, {
+        active: true, reste: 1, bpm: 58, battements: 0,
+        boite: { index: 0, prochain: t + 7.8 },   // la berceuse commence après l'orgue
+        coeur: t + 1.2,
+        prochainBruit: t + 10
+      });
+      toccata(t + 0.15);
+      demarrerGrondement(t);
       musique.minuteur = setInterval(planifierMusique, 25);
     } else if (!allumer && musique.active) {
       musique.active = false;
       clearInterval(musique.minuteur);
-      const bus = musique.bus;
-      bus.gain.cancelScheduledValues(contexte.currentTime);
-      bus.gain.setValueAtTime(bus.gain.value, contexte.currentTime);
-      bus.gain.linearRampToValueAtTime(0, contexte.currentTime + 0.6);
-      setTimeout(() => bus.disconnect(), 800);
+      const sortie = musique.sortie;
+      sortie.gain.cancelScheduledValues(t);
+      sortie.gain.setValueAtTime(sortie.gain.value, t);
+      sortie.gain.linearRampToValueAtTime(0, t + 0.6);
+      musique.grondement.oscs.forEach((o) => o.stop(t + 0.7));
+      setTimeout(() => sortie.disconnect(), 900);
     }
   }
 
-  /** Règle le tempo selon le temps restant (1 = début, 0 = fin). */
+  /** Règle l'angoisse selon le temps restant (1 = début, 0 = fin). */
   function regleTempo(reste) {
-    musique.tempo = 110 + (1 - Math.max(0, Math.min(1, reste))) * 90;
+    musique.reste = Math.max(0, Math.min(1, reste));
+    musique.bpm = 58 + (1 - musique.reste) * 92;
+    if (musique.active && contexte) {
+      // le grondement s'ouvre et devient plus menaçant
+      musique.grondement.filtre.frequency.setTargetAtTime(240 + (1 - musique.reste) * 520, contexte.currentTime, 0.5);
+    }
   }
 
   function etatMusique() {
-    return { active: musique.active, tempo: Math.round(musique.tempo), pas: musique.pas };
+    return {
+      active: musique.active,
+      tempo: Math.round(musique.bpm || 58),
+      pas: musique.boite ? musique.boite.index : 0,
+      battements: musique.battements
+    };
   }
 
-  /** Ambiance de la partie : musique + nappe grave et inquiétante. */
+  /** Ambiance de la partie : la musique effrayante. */
   function ambiance(allumer) {
     if (!contexte) return;
     jouerMusique(allumer);
-    if (allumer && !nappe) {
-      const filtre = contexte.createBiquadFilter();
-      filtre.type = 'lowpass';
-      filtre.frequency.value = 320;
-      const gain = contexte.createGain();
-      gain.gain.setValueAtTime(0, contexte.currentTime);
-      gain.gain.linearRampToValueAtTime(0.035, contexte.currentTime + 2);
-      const oscs = [55, 55.6, 82.4].map((f) => {
-        const o = contexte.createOscillator();
-        o.type = 'triangle';
-        o.frequency.value = f;
-        o.connect(filtre);
-        o.start();
-        return o;
-      });
-      filtre.connect(gain);
-      gain.connect(volumeGeneral);
-      nappe = { oscs, gain };
-    } else if (!allumer && nappe) {
-      const { oscs, gain } = nappe;
-      gain.gain.cancelScheduledValues(contexte.currentTime);
-      gain.gain.setValueAtTime(gain.gain.value, contexte.currentTime);
-      gain.gain.linearRampToValueAtTime(0, contexte.currentTime + 0.8);
-      oscs.forEach((o) => o.stop(contexte.currentTime + 0.9));
-      nappe = null;
-    }
   }
 
   function basculer() {
