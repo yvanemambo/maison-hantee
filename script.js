@@ -11,7 +11,7 @@
      5. Déroulement de la partie (démarrer, valider, indices, chrono…)
      6. Écrans de victoire et de défaite
      7. Effets visuels
-     8. Sons (créés par le navigateur, aucun fichier audio)
+     8. Sons et musique (créés par le navigateur, aucun fichier audio)
      9. Démarrage
    ========================================================================== */
 
@@ -640,6 +640,7 @@ function majChrono() {
   const secondes = String(t % 60).padStart(2, '0');
   el.chrono.textContent = `${minutes}:${secondes}`;
   el.bougie.style.setProperty('--reste', (t / REGLAGES.dureePartie).toFixed(3));
+  Son.regleTempo(t / REGLAGES.dureePartie); // la musique accélère quand le temps file
   const alerte = t <= REGLAGES.seuilAlerte;
   el.hudChrono.classList.toggle('alerte', alerte);
   el.app.classList.toggle('urgence', alerte && etat.enCours);
@@ -845,8 +846,8 @@ function creerEtoiles() {
 }
 
 /* ==========================================================================
-   8. SONS
-   Tous les sons sont fabriqués par le navigateur (Web Audio API) :
+   8. SONS ET MUSIQUE
+   Tous les sons et la musique sont fabriqués par le navigateur (Web Audio API) :
    aucun fichier à télécharger. Le bouton haut-parleur coupe tout.
    ========================================================================== */
 const Son = (() => {
@@ -905,16 +906,166 @@ const Son = (() => {
     if (actif && effets[nom]) effets[nom]();
   }
 
-  /** Nappe grave et inquiétante qui tourne en fond pendant la partie. */
+  /* ------------------------------------------------------------------
+     MUSIQUE D'HALLOWEEN
+     « Dans l'antre du roi de la montagne », Edvard Grieg (1875).
+     Œuvre du domaine public, rejouée note par note par le navigateur.
+     Comme dans l'original, elle accélère : plus le temps file, plus
+     le tempo monte (de 110 à 200 battements par minute).
+     ------------------------------------------------------------------ */
+  // Mélodie en la mineur : [note, durée en croches]
+  const THEME_LA = [
+    ['A3', 1], ['B3', 1], ['C4', 1], ['D4', 1], ['E4', 1], ['C4', 1], ['E4', 2],
+    ['D#4', 1], ['B3', 1], ['D#4', 2], ['D4', 1], ['A#3', 1], ['D4', 2],
+    ['A3', 1], ['B3', 1], ['C4', 1], ['D4', 1], ['E4', 1], ['C4', 1], ['E4', 1], ['A4', 1],
+    ['G4', 1], ['E4', 1], ['C4', 1], ['E4', 1], ['G4', 4]
+  ];
+  // Même thème une quinte plus haut (mi mineur)
+  const THEME_MI = [
+    ['E4', 1], ['F#4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['G4', 1], ['B4', 2],
+    ['A#4', 1], ['F#4', 1], ['A#4', 2], ['A4', 1], ['F4', 1], ['A4', 2],
+    ['E4', 1], ['F#4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['G4', 1], ['B4', 1], ['E5', 1],
+    ['D5', 1], ['B4', 1], ['G4', 1], ['B4', 1], ['D5', 4]
+  ];
+  const BASSE_LA = ['A2', 'E2', 'A2', 'E2'];   // une note de basse par temps
+  const BASSE_MI = ['E2', 'B2', 'E2', 'B2'];
+
+  /** Convertit un nom de note (ex. "D#4") en fréquence (Hz). */
+  function frequenceDe(nom) {
+    const demiTons = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+    const [, lettre, octave] = nom.match(/^([A-G]#?)(\d)$/);
+    const midi = 12 * (Number(octave) + 1) + demiTons[lettre];
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  /** Transforme les thèmes en une suite de « pas » (un pas = une croche). */
+  function construirePartition() {
+    const pas = [];
+    const ajouter = (theme, basse) => {
+      const debut = pas.length;
+      theme.forEach(([nom, duree]) => {
+        pas.push({ melodie: frequenceDe(nom), duree });
+        for (let i = 1; i < duree; i++) pas.push({});
+      });
+      for (let i = debut; i < pas.length; i++) {
+        const dansLaMesure = (i - debut) % 8;
+        if (dansLaMesure % 2 === 0) pas[i].basse = frequenceDe(basse[dansLaMesure / 2]);
+        if (dansLaMesure === 0) pas[i].timbale = true;
+      }
+    };
+    ajouter(THEME_LA, BASSE_LA);
+    ajouter(THEME_LA, BASSE_LA);
+    ajouter(THEME_MI, BASSE_MI);
+    ajouter(THEME_LA, BASSE_LA);
+    return pas;
+  }
+
+  const PARTITION = construirePartition();
+  const musique = { active: false, minuteur: null, bus: null, pas: 0, prochain: 0, tempo: 110 };
+
+  /** Une note d'instrument, jouée à un instant précis t (en secondes audio). */
+  function voix(frequence, t, duree, type, volume, filtreHz) {
+    const osc = contexte.createOscillator();
+    const filtre = contexte.createBiquadFilter();
+    const gain = contexte.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(frequence, t);
+    filtre.type = 'lowpass';
+    filtre.frequency.value = filtreHz;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(volume, t + 0.012);          // attaque rapide
+    gain.gain.exponentialRampToValueAtTime(volume * 0.6, t + duree * 0.6); // la note tient
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duree);          // puis s'éteint
+    osc.connect(filtre);
+    filtre.connect(gain);
+    gain.connect(musique.bus);
+    osc.start(t);
+    osc.stop(t + duree + 0.05);
+  }
+
+  function timbale(t) {
+    const osc = contexte.createOscillator();
+    const gain = contexte.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(95, t);
+    osc.frequency.exponentialRampToValueAtTime(48, t + 0.3);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.38, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    osc.connect(gain);
+    gain.connect(musique.bus);
+    osc.start(t);
+    osc.stop(t + 0.45);
+  }
+
+  /** Joue un pas de la partition. */
+  function jouerPas(pas, t, croche) {
+    if (pas.melodie) {
+      const duree = Math.max(0.1, croche * pas.duree * 0.85);   // notes bien détachées, façon pizzicato
+      voix(pas.melodie, t, duree, 'square', 0.13, 1600);
+      voix(pas.melodie / 2, t, duree, 'triangle', 0.14, 900);
+    }
+    if (pas.basse) voix(pas.basse, t, croche * 1.6, 'triangle', 0.24, 500);
+    if (pas.timbale) timbale(t);
+  }
+
+  /** Programme les notes un petit peu en avance pour un rythme parfait. */
+  function planifierMusique() {
+    if (!musique.active) return;
+    const maintenant = contexte.currentTime;
+    if (musique.prochain < maintenant - 0.05) musique.prochain = maintenant + 0.05;
+    while (musique.prochain < maintenant + 0.15) {
+      const croche = 60 / musique.tempo / 2;
+      jouerPas(PARTITION[musique.pas % PARTITION.length], musique.prochain, croche);
+      musique.prochain += croche;
+      musique.pas++;
+    }
+  }
+
+  /** Lance ou arrête la musique (avec un fondu). */
+  function jouerMusique(allumer) {
+    if (!contexte) return;
+    if (allumer && !musique.active) {
+      musique.bus = contexte.createGain();
+      musique.bus.gain.setValueAtTime(0, contexte.currentTime);
+      musique.bus.gain.linearRampToValueAtTime(1, contexte.currentTime + 1.5);
+      musique.bus.connect(volumeGeneral);
+      musique.active = true;
+      musique.pas = 0;
+      musique.tempo = 110;
+      musique.prochain = contexte.currentTime + 0.1;
+      musique.minuteur = setInterval(planifierMusique, 25);
+    } else if (!allumer && musique.active) {
+      musique.active = false;
+      clearInterval(musique.minuteur);
+      const bus = musique.bus;
+      bus.gain.cancelScheduledValues(contexte.currentTime);
+      bus.gain.setValueAtTime(bus.gain.value, contexte.currentTime);
+      bus.gain.linearRampToValueAtTime(0, contexte.currentTime + 0.6);
+      setTimeout(() => bus.disconnect(), 800);
+    }
+  }
+
+  /** Règle le tempo selon le temps restant (1 = début, 0 = fin). */
+  function regleTempo(reste) {
+    musique.tempo = 110 + (1 - Math.max(0, Math.min(1, reste))) * 90;
+  }
+
+  function etatMusique() {
+    return { active: musique.active, tempo: Math.round(musique.tempo), pas: musique.pas };
+  }
+
+  /** Ambiance de la partie : musique + nappe grave et inquiétante. */
   function ambiance(allumer) {
     if (!contexte) return;
+    jouerMusique(allumer);
     if (allumer && !nappe) {
       const filtre = contexte.createBiquadFilter();
       filtre.type = 'lowpass';
       filtre.frequency.value = 320;
       const gain = contexte.createGain();
       gain.gain.setValueAtTime(0, contexte.currentTime);
-      gain.gain.linearRampToValueAtTime(0.07, contexte.currentTime + 2);
+      gain.gain.linearRampToValueAtTime(0.035, contexte.currentTime + 2);
       const oscs = [55, 55.6, 82.4].map((f) => {
         const o = contexte.createOscillator();
         o.type = 'triangle';
@@ -954,7 +1105,7 @@ const Son = (() => {
     });
   }
 
-  return { demarrer, jouer, ambiance, basculer, majBoutons };
+  return { demarrer, jouer, ambiance, basculer, majBoutons, regleTempo, etatMusique };
 })();
 
 /* ==========================================================================

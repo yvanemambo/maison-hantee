@@ -105,6 +105,8 @@ bonusParSeconde: 3,      // bonus final par seconde restante
 
 **Modifier une énigme** (partie `2. LES 10 ÉNIGMES`) : change le texte de `question`, ajoute des réponses acceptées dans `reponses`, réécris les `indices`. Pas besoin de mettre les accents ou les majuscules dans `reponses` : le jeu les ignore.
 
+**La musique :** « Dans l'antre du roi de la montagne » d'Edvard Grieg (1875, domaine public), jouée note par note par le navigateur (partie `8. SONS ET MUSIQUE` de `script.js`). Elle accélère de 110 à 200 battements par minute à mesure que le temps s'écoule. Le bouton haut-parleur la coupe.
+
 **Calcul du score :** +100 par énigme, −25 par indice, −10 par erreur (jamais sous 0), puis +3 points par seconde restante à la victoire. Le meilleur score est gardé dans le navigateur du joueur.
 
 ---

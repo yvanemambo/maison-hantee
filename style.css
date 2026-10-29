@@ -570,6 +570,12 @@ button, input { font: inherit; color: inherit; }
   color: var(--brume);
 }
 .record-accueil strong { color: var(--braise); font-variant-numeric: tabular-nums; }
+.credit-musique {
+  margin: 0;
+  font-size: .85rem;
+  color: rgb(var(--brume-rgb) / .8);
+}
+.credit-musique::before { content: "♪ "; color: var(--citrouille); }
 
 /* ==========================================================================
    5. HUD (chronomètre, salle, score) ET PROGRESSION
